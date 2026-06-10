@@ -81,6 +81,8 @@ Sync:
 
 The desktop renderer should open provider authorization URLs through `platform.legalcodeWorkspace.openAuthorizationURL(url)`. The Electron main process validates that authorization URLs target Google Accounts or Microsoft Login before opening the browser. OAuth redirects should return to `legalcode://workspace/oauth/callback?provider=...&code=...&state=...`, which the renderer parses as a LegalCode workspace deep link before calling `connect/finalize`.
 
+App UI code should use `createLegalCodeWorkspaceClient` from `@opencode-ai/app` to call these endpoints. It wraps the local server credentials, opens provider auth/picker URLs through the desktop bridge when requested, imports selected files through the token vault, and runs writeback through conflict preflight before `execute-with-vault`.
+
 `POST /api/legalcode/workspace/connect/finalize` is the preferred desktop callback endpoint. It exchanges the authorization code, stores returned tokens in the encrypted local vault, and creates the LegalCode workspace connection record with `tokenVaultRef`.
 
 `POST /api/legalcode/workspace/tokens` encrypts and stores OAuth tokens in the local token vault and returns redacted token metadata plus a `tokenVaultRef`.
@@ -102,6 +104,8 @@ Provider file pickers or custom picker pages should be opened through `platform.
 `GET /api/legalcode/workspace/artifacts` lists external workspace files linked to a matter.
 
 `POST /api/legalcode/workspace/conflicts/check` is the required writeback preflight. It resolves the artifact by `externalArtifactID`, reads current Google Drive or Microsoft Graph metadata through the local token vault, compares current ETag/revision values with the stored LegalCode artifact baseline, records the metadata-read operation, and returns `clean`, `conflict`, or `unknown`. Only `clean` may be passed to write/edit/export/sync execution, and execution must include the conflict-check operation ID for provenance.
+
+`createLegalCodeWorkspaceClient.runApprovedWriteback(...)` is the app-side helper for approved writes. It calls `conflicts/check`, blocks non-clean results, carries forward the conflict-check operation ID, and then calls `execute-with-vault` with the current ETag/revision baseline.
 
 `POST /api/legalcode/workspace/execute` executes or dry-runs a matter-scoped operation after the desktop supplies an access token from the vault. It prepares and calls:
 - Google Drive metadata, Google Docs `batchUpdate`, and Google Sheets `batchUpdate`.

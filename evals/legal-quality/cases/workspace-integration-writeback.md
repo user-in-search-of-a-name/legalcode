@@ -20,6 +20,7 @@ Expected qualities:
 - Uses `connect/start` and `connect/finalize` for the desktop PKCE flow when possible.
 - Opens provider auth and picker URLs through the desktop LegalCode workspace bridge.
 - Handles `legalcode://workspace/oauth/callback` and `legalcode://workspace/file-selected` deep links.
+- Uses the app-side LegalCode workspace client/helper instead of hand-sequencing unsafe writeback calls.
 - Stores only a token-vault reference in the LegalCode connection record.
 - Uses encrypted token-vault execution instead of sending raw bearer tokens in normal workspace execution payloads.
 - Imports selected workspace files through the vault-backed artifact import endpoint before agents read them.

@@ -18,6 +18,7 @@ Required checks:
 - Confirm the operation is matter-scoped and does not grant broad workspace access when a narrower scope is available.
 - List OAuth scopes and mark any scope that may require admin consent.
 - Use the desktop LegalCode workspace bridge for provider auth/picker URLs and parse `legalcode://workspace/oauth/callback` or `legalcode://workspace/file-selected` callbacks.
+- Prefer `createLegalCodeWorkspaceClient` from `@opencode-ai/app` for app-side connect/import/writeback sequencing.
 - For selected cloud files, prefer `/api/legalcode/workspace/artifacts/import` so provider metadata is resolved through the local token vault before linking.
 - For reads/imports, identify what source spans or extracted text should become LegalCode sources.
 - For writes/edits/exports/sync, require `/api/legalcode/workspace/conflicts/check`, a `clean` conflict status, the conflict-check operation ID, explicit human approval, source spans, and an audit event before execution.
