@@ -1,6 +1,6 @@
-# OpenCode Desktop
+# LegalCode Desktop
 
-The OpenCode Desktop app, built with Electron.
+The standalone LegalCode desktop app, built with Electron on top of the OpenCode runtime.
 
 ## Development
 

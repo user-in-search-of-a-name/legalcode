@@ -1,6 +1,10 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "provider": {},
+  "share": "disabled",
+  "instructions": [
+    ".opencode/instructions/legal-edition.md",
+  ],
   "permission": {},
   "references": {
     "effect": {
@@ -10,6 +14,10 @@
     "opencode-local": {
       "path": "~/.local/share/opencode",
       "description": "Contains opencode logs and data",
+    },
+    "legal-edition": {
+      "path": "./docs",
+      "description": "Legal edition product principles, operating model, and quality benchmark",
     },
   },
   "mcp": {},

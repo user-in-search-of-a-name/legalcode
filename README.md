@@ -1,3 +1,5 @@
+> LegalCode Edition: this workspace is a legal-use customization of OpenCode that is moving toward a standalone desktop app with matter workspaces, collaborative legal documents, and collaborative legal sheets. It is not built by, endorsed by, or affiliated with the OpenCode team. Start with [docs/legal-edition.md](docs/legal-edition.md) and [docs/desktop-collaboration.md](docs/desktop-collaboration.md).
+
 <p align="center">
   <a href="https://opencode.ai">
     <picture>
@@ -64,23 +66,16 @@ nix run nixpkgs#opencode           # or github:anomalyco/opencode for latest dev
 > [!TIP]
 > Remove versions older than 0.1.x before installing.
 
-### Desktop App (BETA)
+### LegalCode Desktop App
 
-OpenCode is also available as a desktop application. Download directly from the [releases page](https://github.com/anomalyco/opencode/releases) or [opencode.ai/download](https://opencode.ai/download).
+LegalCode is being packaged as a standalone desktop application on top of the OpenCode runtime.
 
 | Platform              | Download                           |
 | --------------------- | ---------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-mac-arm64.dmg`   |
-| macOS (Intel)         | `opencode-desktop-mac-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe` |
+| macOS (Apple Silicon) | `legalcode-desktop-mac-arm64.dmg`  |
+| macOS (Intel)         | `legalcode-desktop-mac-x64.dmg`    |
+| Windows               | `legalcode-desktop-windows-x64.exe` |
 | Linux                 | `.deb`, `.rpm`, or `.AppImage`     |
-
-```bash
-# macOS (Homebrew)
-brew install --cask opencode-desktop
-# Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
-```
 
 #### Installation Directory
 

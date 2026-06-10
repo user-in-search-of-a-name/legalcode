@@ -27,7 +27,7 @@ const channel = (() => {
 })()
 
 const getBase = (): Configuration => ({
-  artifactName: "opencode-desktop-${os}-${arch}.${ext}",
+  artifactName: "legalcode-desktop-${os}-${arch}.${ext}",
   directories: {
     output: "dist",
     buildResources: "resources",
@@ -41,7 +41,7 @@ const getBase = (): Configuration => ({
     },
   ],
   mac: {
-    category: "public.app-category.developer-tools",
+    category: "public.app-category.business",
     icon: `resources/icons/icon.icns`,
     hardenedRuntime: true,
     gatekeeperAssess: false,
@@ -54,8 +54,8 @@ const getBase = (): Configuration => ({
     sign: true,
   },
   protocols: {
-    name: "OpenCode",
-    schemes: ["opencode"],
+    name: "LegalCode",
+    schemes: ["legalcode", "opencode"],
   },
   win: {
     icon: `resources/icons/icon.ico`,
@@ -73,8 +73,8 @@ const getBase = (): Configuration => ({
   },
   linux: {
     icon: `resources/icons`,
-    category: "Development",
-    executableName: "opencode-desktop",
+    category: "Office",
+    executableName: "legalcode-desktop",
     target: ["AppImage", "deb", "rpm"],
   },
 })
@@ -86,29 +86,27 @@ function getConfig() {
     case "dev": {
       return {
         ...base,
-        appId: "ai.opencode.desktop.dev",
-        productName: "OpenCode Dev",
-        rpm: { packageName: "opencode-dev" },
+        appId: "ai.legalcode.desktop.dev",
+        productName: "LegalCode Dev",
+        rpm: { packageName: "legalcode-dev" },
       }
     }
     case "beta": {
       return {
         ...base,
-        appId: "ai.opencode.desktop.beta",
-        productName: "OpenCode Beta",
-        protocols: { name: "OpenCode Beta", schemes: ["opencode"] },
-        publish: { provider: "github", owner: "anomalyco", repo: "opencode-beta", channel: "latest" },
-        rpm: { packageName: "opencode-beta" },
+        appId: "ai.legalcode.desktop.beta",
+        productName: "LegalCode Beta",
+        protocols: { name: "LegalCode Beta", schemes: ["legalcode", "opencode"] },
+        rpm: { packageName: "legalcode-beta" },
       }
     }
     case "prod": {
       return {
         ...base,
-        appId: "ai.opencode.desktop",
-        productName: "OpenCode",
-        protocols: { name: "OpenCode", schemes: ["opencode"] },
-        publish: { provider: "github", owner: "anomalyco", repo: "opencode", channel: "latest" },
-        rpm: { packageName: "opencode" },
+        appId: "ai.legalcode.desktop",
+        productName: "LegalCode",
+        protocols: { name: "LegalCode", schemes: ["legalcode", "opencode"] },
+        rpm: { packageName: "legalcode" },
       }
     }
   }

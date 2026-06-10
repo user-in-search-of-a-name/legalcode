@@ -1,13 +1,12 @@
 {
-  "name": "@opencode-ai/desktop",
+  "name": "@legalcode/desktop",
   "private": true,
   "version": "1.17.0",
   "type": "module",
   "license": "MIT",
-  "homepage": "https://opencode.ai",
+  "description": "LegalCode desktop app",
   "author": {
-    "name": "OpenCode",
-    "email": "hello@opencode.ai"
+    "name": "LegalCode"
   },
   "scripts": {
     "typecheck": "tsgo -b",
