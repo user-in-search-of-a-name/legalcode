@@ -496,3 +496,46 @@ export const WorkspaceExecuteResponse = Schema.Struct({
   blockedReasons: Schema.Array(Schema.String),
 })
 export type WorkspaceExecuteResponse = typeof WorkspaceExecuteResponse.Type
+
+export const WorkspaceConnectionCreate = Schema.Struct({
+  matterID: MatterID.pipe(Schema.optional),
+  provider: WorkspaceProvider,
+  accountEmail: Schema.String.pipe(Schema.optional),
+  accountLabel: Schema.String.pipe(Schema.optional),
+  tenantID: Schema.String.pipe(Schema.optional),
+  domain: Schema.String.pipe(Schema.optional),
+  status: WorkspaceConnectionStatus,
+  scopes: Schema.Array(Schema.String),
+  readEnabled: Schema.Boolean,
+  writeEnabled: Schema.Boolean,
+  editEnabled: Schema.Boolean,
+  tokenVaultRef: Schema.String.pipe(Schema.optional),
+  metadata: Schema.Record(Schema.String, Schema.Unknown),
+})
+export type WorkspaceConnectionCreate = typeof WorkspaceConnectionCreate.Type
+
+export const ExternalArtifactLink = Schema.Struct({
+  matterID: MatterID,
+  connectionID: WorkspaceConnectionID,
+  provider: WorkspaceProvider,
+  app: WorkspaceApp,
+  externalID: Schema.String,
+  title: Schema.String,
+  mimeType: Schema.String.pipe(Schema.optional),
+  webURL: Schema.String.pipe(Schema.optional),
+  localArtifactID: ArtifactID.pipe(Schema.optional),
+  sourceID: SourceID.pipe(Schema.optional),
+  syncDirection: WorkspaceSyncDirection,
+  syncStatus: WorkspaceSyncStatus,
+  etag: Schema.String.pipe(Schema.optional),
+  revision: Schema.String.pipe(Schema.optional),
+  humanApproval: HumanApprovalStatus,
+  metadata: Schema.Record(Schema.String, Schema.Unknown),
+})
+export type ExternalArtifactLink = typeof ExternalArtifactLink.Type
+
+export const WorkspaceRecordOperation = Schema.Struct({
+  operation: WorkspaceOperation,
+  result: WorkspaceExecuteResult.pipe(Schema.optional),
+})
+export type WorkspaceRecordOperation = typeof WorkspaceRecordOperation.Type

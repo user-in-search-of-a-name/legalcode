@@ -1,5 +1,6 @@
 import { SessionV2 } from "@opencode-ai/core/session"
 import { LocationServiceMap } from "@opencode-ai/core/location-layer"
+import { LegalCodeStore } from "@opencode-ai/core/legalcode-store"
 import { PermissionSaved } from "@opencode-ai/core/permission/saved"
 import { Layer } from "effect"
 import { layer as locationLayer } from "./groups/location"
@@ -39,6 +40,7 @@ export const handlers = Layer.mergeAll(
   Layer.provide(sessionLocationLayer),
   Layer.provide(locationLayer),
   Layer.provide(SessionV2.defaultLayer),
+  Layer.provide(LegalCodeStore.defaultLayer),
   Layer.provide(SessionExecutionLocal.defaultLayer),
   Layer.provide(PermissionSaved.defaultLayer),
   Layer.provide(LocationServiceMap.layer),

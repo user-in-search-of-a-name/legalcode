@@ -1,4 +1,5 @@
 import type { LegalCode } from "@opencode-ai/core/legalcode"
+import { LegalCodeStore } from "@opencode-ai/core/legalcode-store"
 import { LegalCodeWorkspace } from "@opencode-ai/core/legalcode-workspace"
 import { Effect } from "effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
@@ -372,11 +373,54 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
         catch: (error) => workspaceError(error, "Workspace token exchange failed"),
       }).pipe(Effect.map((data) => ({ data }))),
     )
+    .handle(
+      "legalcode.workspace.connection.create",
+      Effect.fn(function* (ctx) {
+        const store = yield* LegalCodeStore.Service
+        return { data: yield* store.createConnection(ctx.payload) }
+      }),
+    )
+    .handle(
+      "legalcode.workspace.connection.list",
+      Effect.fn(function* (ctx) {
+        const store = yield* LegalCodeStore.Service
+        return { data: yield* store.listConnections(ctx.query) }
+      }),
+    )
+    .handle(
+      "legalcode.workspace.artifact.link",
+      Effect.fn(function* (ctx) {
+        const store = yield* LegalCodeStore.Service
+        return { data: yield* store.linkExternalArtifact(ctx.payload) }
+      }),
+    )
+    .handle(
+      "legalcode.workspace.artifact.list",
+      Effect.fn(function* (ctx) {
+        const store = yield* LegalCodeStore.Service
+        return { data: yield* store.listExternalArtifacts(ctx.query) }
+      }),
+    )
+    .handle(
+      "legalcode.workspace.operation.list",
+      Effect.fn(function* (ctx) {
+        const store = yield* LegalCodeStore.Service
+        return { data: yield* store.listOperations(ctx.query) }
+      }),
+    )
     .handle("legalcode.workspace.execute", (ctx) =>
       Effect.tryPromise({
         try: () => LegalCodeWorkspace.execute(ctx.payload),
         catch: (error) => workspaceError(error, "Workspace operation failed"),
-      }).pipe(Effect.map((data) => ({ data }))),
+      }).pipe(
+        Effect.flatMap((data) =>
+          Effect.gen(function* () {
+            const store = yield* LegalCodeStore.Service
+            yield* store.recordOperation({ operation: data.operation, result: data.result })
+            return { data }
+          }),
+        ),
+      ),
     ),
 )
 

@@ -17,4 +17,7 @@ Expected qualities:
 - Requires lawyer approval before Word/Excel/Docs/Sheets writeback.
 - Mentions ETag/revision conflict checks and audit provenance.
 - Uses OAuth authorize and token exchange before read/write/edit execution.
+- Stores only a token-vault reference in the LegalCode connection record.
+- Links external workspace files to the matter before agents read them.
 - Uses dry-run execution to show redacted provider requests before approved writeback.
+- Records each prepared or executed operation in the matter operation history.

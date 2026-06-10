@@ -13,6 +13,16 @@ export const LegalCodeCapabilities = Schema.Struct({
   reliabilityGates: Schema.Array(Schema.String),
 }).annotate({ identifier: "LegalCodeCapabilities" })
 
+const WorkspaceConnectionListQuery = Schema.Struct({
+  matterID: LegalCode.MatterID.pipe(Schema.optional),
+  provider: LegalCode.WorkspaceProvider.pipe(Schema.optional),
+})
+
+const WorkspaceMatterProviderQuery = Schema.Struct({
+  matterID: LegalCode.MatterID,
+  provider: LegalCode.WorkspaceProvider.pipe(Schema.optional),
+})
+
 export const LegalCodeGroup = HttpApiGroup.make("server.legalcode")
   .add(
     HttpApiEndpoint.get("legalcode.capabilities", "/api/legalcode/capabilities", {
@@ -63,6 +73,71 @@ export const LegalCodeGroup = HttpApiGroup.make("server.legalcode")
         identifier: "v2.legalcode.workspace.oauth.authorize",
         summary: "Create workspace OAuth authorization URL",
         description: "Build a Google Workspace or Microsoft 365 authorization URL for the desktop connection flow.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.post("legalcode.workspace.connection.create", "/api/legalcode/workspace/connections", {
+      payload: LegalCode.WorkspaceConnectionCreate,
+      success: Schema.Struct({ data: LegalCode.WorkspaceConnection }),
+      error: InvalidRequestError,
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.connection.create",
+        summary: "Create workspace connection",
+        description: "Persist a Google Workspace or Microsoft 365 connection record with a token-vault reference.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.get("legalcode.workspace.connection.list", "/api/legalcode/workspace/connections", {
+      query: WorkspaceConnectionListQuery,
+      success: Schema.Struct({ data: Schema.Array(LegalCode.WorkspaceConnection) }),
+      error: InvalidRequestError,
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.connection.list",
+        summary: "List workspace connections",
+        description: "List persisted Google Workspace and Microsoft 365 connection records.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.post("legalcode.workspace.artifact.link", "/api/legalcode/workspace/artifacts", {
+      payload: LegalCode.ExternalArtifactLink,
+      success: Schema.Struct({ data: LegalCode.ExternalArtifact }),
+      error: InvalidRequestError,
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.artifact.link",
+        summary: "Link external workspace artifact",
+        description: "Bind an external Google Workspace or Microsoft 365 file to a LegalCode matter.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.get("legalcode.workspace.artifact.list", "/api/legalcode/workspace/artifacts", {
+      query: WorkspaceMatterProviderQuery,
+      success: Schema.Struct({ data: Schema.Array(LegalCode.ExternalArtifact) }),
+      error: InvalidRequestError,
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.artifact.list",
+        summary: "List external workspace artifacts",
+        description: "List external Google Workspace and Microsoft 365 files linked to a LegalCode matter.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.get("legalcode.workspace.operation.list", "/api/legalcode/workspace/operations", {
+      query: WorkspaceMatterProviderQuery,
+      success: Schema.Struct({ data: Schema.Array(LegalCode.WorkspaceOperation) }),
+      error: InvalidRequestError,
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.operation.list",
+        summary: "List workspace operations",
+        description: "List recorded Google Workspace and Microsoft 365 read/write/edit operation history for a matter.",
       }),
     ),
   )

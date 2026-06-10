@@ -125,7 +125,10 @@ export function prepareExecuteRequest(input: LegalCode.WorkspaceExecuteRequest):
 
 export async function execute(input: LegalCode.WorkspaceExecuteRequest): Promise<LegalCode.WorkspaceExecuteResponse> {
   const prepared = prepareExecuteRequest(input)
-  const operation = makeOperation(input, prepared.blockedReasons.length === 0 ? "running" : "cancelled")
+  const operation = makeOperation(
+    input,
+    prepared.blockedReasons.length > 0 ? "cancelled" : input.dryRun ? "planned" : "running",
+  )
   if (prepared.blockedReasons.length > 0 || input.dryRun) {
     return { operation, request: prepared.request, blockedReasons: prepared.blockedReasons }
   }
