@@ -1,0 +1,46 @@
+{
+  "jurisdiction": "us",
+  "name": "US Litigation",
+  "status": "active",
+  "citationFormats": [
+    "Bluebook case citations with court and year",
+    "Federal Rules of Civil Procedure as Fed. R. Civ. P. <rule>",
+    "Federal Rules of Evidence as Fed. R. Evid. <rule>",
+    "Local rules by court-specific abbreviation when available"
+  ],
+  "pleadingTemplates": [
+    "complaint",
+    "answer",
+    "motion",
+    "memorandum of law",
+    "declaration",
+    "proposed order",
+    "certificate of service",
+    "demand letter"
+  ],
+  "deadlineRules": [
+    "Do not calculate a deadline without forum, triggering event, service method, and source rule/order.",
+    "Mark all extracted dates as proposed until lawyer-verified.",
+    "Flag weekends, court holidays, local rules, and ECF-specific cutoffs as verification requirements."
+  ],
+  "filingChecklist": [
+    "Caption",
+    "Court and case number",
+    "Party names",
+    "Signature block",
+    "Certificate of service",
+    "Exhibits",
+    "Declarations",
+    "Proposed order when required",
+    "Citation verification",
+    "Deadline verification",
+    "Human approval"
+  ],
+  "researchSourcePreferences": [
+    "Provided case files and orders",
+    "Official court rules and local rules",
+    "Official statutes and regulations",
+    "Court opinions from official or reliable sources",
+    "Secondary sources only as research leads"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "Consumer Debt Collection Defense",
+  "type": "debt_collection",
+  "jurisdiction": "us",
+  "court": "State civil court",
+  "clientName": "Consumer defendant",
+  "opposingParties": ["Debt buyer"],
+  "claims": ["collection action defense", "standing", "amount dispute"],
+  "posture": "answer deadline and discovery planning",
+  "expectedWorkflows": [
+    "legal-deadline-check",
+    "legal-motion-outline",
+    "legal-discovery-plan",
+    "legal-citation-check"
+  ],
+  "acceptanceCriteria": [
+    "Treats answer deadline as high-risk and source-dependent.",
+    "Identifies assignment/standing proof gaps.",
+    "Drafts discovery requests for account records and ownership chain.",
+    "Marks all deadline calculations as proposed pending lawyer verification."
+  ]
+}

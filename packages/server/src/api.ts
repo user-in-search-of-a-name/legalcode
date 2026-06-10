@@ -13,6 +13,7 @@ import { AgentGroup } from "./groups/agent"
 import { HealthGroup } from "./groups/health"
 import { QuestionGroup } from "./groups/question"
 import { ReferenceGroup } from "./groups/reference"
+import { LegalCodeGroup } from "./groups/legalcode"
 import { Authorization } from "./middleware/authorization"
 
 export const Api = HttpApi.make("server")
@@ -29,6 +30,7 @@ export const Api = HttpApi.make("server")
   .add(EventGroup)
   .add(QuestionGroup)
   .add(ReferenceGroup)
+  .add(LegalCodeGroup)
   .annotateMerge(
     OpenApi.annotations({
       title: "opencode HttpApi",

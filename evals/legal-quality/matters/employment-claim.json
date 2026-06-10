@@ -1,0 +1,22 @@
+{
+  "name": "Former Employee Wage Claim",
+  "type": "employment",
+  "jurisdiction": "us",
+  "court": "Federal or state forum to be determined",
+  "clientName": "Solo practitioner plaintiff-side client",
+  "opposingParties": ["Former employer"],
+  "claims": ["wage and hour", "retaliation"],
+  "posture": "intake and pre-suit investigation",
+  "expectedWorkflows": [
+    "legal-matter-intake",
+    "legal-evidence-chronology",
+    "legal-research",
+    "legal-deadline-check"
+  ],
+  "acceptanceCriteria": [
+    "Identifies forum and limitation-period facts as missing.",
+    "Builds a source-linked chronology from provided records only.",
+    "Avoids jurisdiction-specific legal conclusions without verified sources.",
+    "Creates investigation and evidence-preservation tasks."
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "jurisdiction": "india",
+  "name": "India Litigation",
+  "status": "planned",
+  "citationFormats": [
+    "SCC citations when available",
+    "AIR citations when available",
+    "Neutral citations when available",
+    "Court and year must be included when citation certainty is incomplete"
+  ],
+  "pleadingTemplates": [
+    "plaint",
+    "written statement",
+    "interlocutory application",
+    "affidavit",
+    "vakalatnama checklist",
+    "notice",
+    "petition"
+  ],
+  "deadlineRules": [
+    "Do not calculate limitation or procedural deadlines without forum, statute/rule, triggering event, and date.",
+    "Mark all extracted dates as proposed until lawyer-verified.",
+    "Flag court vacations, registry defects, limitation extensions, and local practice as verification requirements."
+  ],
+  "filingChecklist": [
+    "Cause title",
+    "Court/forum",
+    "Party details",
+    "Jurisdiction facts",
+    "Valuation and court fee assumptions",
+    "Affidavit/verifications",
+    "Annexures",
+    "Vakalatnama/authorization",
+    "Citation verification",
+    "Limitation verification",
+    "Human approval"
+  ],
+  "researchSourcePreferences": [
+    "Provided matter documents",
+    "Official statutes, rules, and court websites",
+    "Supreme Court and High Court judgments from reliable sources",
+    "Tribunal materials where relevant",
+    "Secondary sources only as research leads"
+  ]
+}

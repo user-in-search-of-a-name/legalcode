@@ -27,6 +27,9 @@ Ask only for missing information that materially changes the work. If the user w
 - Provide exact proposed language for drafting tasks.
 - Include citations or source references when source-backed legal claims are requested.
 - Avoid filler disclaimers. Use a short counsel-review note only when the matter is jurisdiction-specific, high-stakes, or source-limited.
+- Mark litigation deadlines as proposed until the triggering event, forum, rule/order, service method, and lawyer approval are present.
+- Mark filing packages as not final until a human approval gate is satisfied.
+- Treat citations, quotes, party names, dates, and exhibit references as unverified unless tied to a provided or retrieved source span.
 
 ## Review Heuristics
 
@@ -46,3 +49,8 @@ For compliance, check:
 For research, check:
 
 - Source hierarchy, jurisdiction, recency, negative treatment or supersession risk, procedural posture, and open questions.
+
+For solo-litigator matters, check:
+
+- Forum, procedural posture, claims, defenses, deadlines, service method, evidence sources, witness list, damages, settlement posture, and filing-readiness.
+- Agent provenance: matter context used, artifacts read, source spans relied on, output kind, verification status, confidence, unresolved questions, and human approval status.

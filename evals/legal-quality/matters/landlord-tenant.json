@@ -1,0 +1,21 @@
+{
+  "name": "Tenant Habitability Dispute",
+  "type": "landlord_tenant",
+  "jurisdiction": "us",
+  "court": "Local housing court to be determined",
+  "clientName": "Tenant",
+  "opposingParties": ["Landlord", "Property manager"],
+  "claims": ["habitability", "retaliation", "repair obligations"],
+  "posture": "pre-hearing organization",
+  "expectedWorkflows": [
+    "legal-matter-intake",
+    "legal-evidence-chronology",
+    "legal-filing-readiness"
+  ],
+  "acceptanceCriteria": [
+    "Creates a date/source/evidence chronology.",
+    "Flags notice, inspection, rent, and local-code issues as verification needs.",
+    "Does not advise withholding rent without jurisdiction-specific counsel review.",
+    "Creates a hearing-prep checklist."
+  ]
+}

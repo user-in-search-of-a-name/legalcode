@@ -13,6 +13,7 @@ Give legal professionals an agentic workspace that can:
 - plan and summarize legal research,
 - map compliance obligations to controls and evidence,
 - co-edit legal documents and structured matter sheets with teammates,
+- manage solo-litigator matter workflows with deadlines, evidence chronologies, pleadings, discovery, settlement, and filing readiness,
 - organize legal operations workflows with disciplined source handling.
 
 The first version intentionally lives in `.opencode` configuration rather than core runtime code. That keeps the fork maintainable while we validate the legal workflows.
@@ -42,6 +43,8 @@ Use Codex as the quality bar:
 - `.opencode/command/legal-matter-brief.md` adds a matter briefing workflow.
 - `evals/legal-quality/README.md` defines the initial quality rubric and seed benchmark cases.
 - `docs/desktop-collaboration.md` defines the standalone desktop and Google Docs/Sheets-style team collaboration architecture.
+- `jurisdictions/us-litigation.json` starts the active US litigation jurisdiction pack.
+- `jurisdictions/india-litigation.json` starts the planned India litigation jurisdiction pack.
 
 ## Default Legal Guardrails
 
@@ -58,3 +61,4 @@ Use Codex as the quality bar:
 4. Add optional integrations for matter management, DMS, e-signature, and legal research providers.
 5. Build a legal-first UI profile that emphasizes documents, issue lists, citations, redlines, and approval workflow.
 6. Add matter workspaces, legal documents, legal sheets, team presence, comments, permissions, and audit-backed collaboration.
+7. Wire the LegalCode core domain into desktop matter views, local SQLite services, and API routes.

@@ -1,0 +1,22 @@
+{
+  "name": "Acme v. Northstar Software",
+  "type": "contract_dispute",
+  "jurisdiction": "us",
+  "court": "State trial court, New York",
+  "clientName": "Acme Services LLC",
+  "opposingParties": ["Northstar Software Inc."],
+  "claims": ["breach of contract", "breach of warranty"],
+  "posture": "pre-complaint demand and pleading evaluation",
+  "expectedWorkflows": [
+    "legal-matter-intake",
+    "legal-evidence-chronology",
+    "legal-complaint-draft",
+    "legal-settlement-brief"
+  ],
+  "acceptanceCriteria": [
+    "Separates contract text from client allegations.",
+    "Flags warranty disclaimer and limitation of liability issues.",
+    "Marks deadlines and legal citations as unverified without source rules.",
+    "Creates a first task list and evidence gaps."
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "Personal Injury Demand Package",
+  "type": "personal_injury",
+  "jurisdiction": "us",
+  "court": "Pre-suit insurance claim",
+  "clientName": "Injured claimant",
+  "opposingParties": ["Driver", "Insurer"],
+  "claims": ["negligence", "damages"],
+  "posture": "demand package preparation",
+  "expectedWorkflows": [
+    "legal-evidence-chronology",
+    "legal-settlement-brief",
+    "legal-matter-brief"
+  ],
+  "acceptanceCriteria": [
+    "Separates medical records, bills, liability facts, and damages assumptions.",
+    "Builds a source-linked chronology.",
+    "Flags missing records and causation gaps.",
+    "Prepares a demand outline without guaranteeing settlement value."
+  ]
+}

@@ -10,6 +10,7 @@ LegalCode Desktop has four primary surfaces:
 - **Legal documents:** Rich-text documents for contracts, memos, policies, briefs, playbooks, and research notes.
 - **Legal sheets:** Structured tables for obligation trackers, diligence lists, clause matrices, issue logs, privilege logs, and compliance controls.
 - **Agent panel:** LegalCode agents that can read selected matter context, draft into documents, populate sheets, summarize threads, and propose edits.
+- **Trust dashboard:** Citation, quote, deadline, source-span, and human-approval status across the matter.
 
 The app should support offline-first local work and online team collaboration. Desktop remains the primary professional surface; web access can follow as a companion for review and comments.
 
@@ -115,14 +116,14 @@ Keep chat/session sharing separate from legal artifact sharing. LegalCode should
 
 1. Rebrand desktop shell and app identity to LegalCode.
 2. Add local matter workspace model and matter home.
-3. Add document artifact view with comments and version history.
-4. Add sheet artifact view for issue lists and compliance maps.
-5. Add real-time presence and comment sync.
-6. Add CRDT co-editing for legal documents.
-7. Add CRDT co-editing for legal sheets.
-8. Add team roles, invites, and artifact-level permissions.
-9. Add agent provenance and suggested-edits workflow.
-10. Add export, audit log, and retention controls.
+3. Add litigation trust dashboard for sources, citations, deadlines, and filing readiness.
+4. Add document artifact view with comments and version history.
+5. Add sheet artifact view for issue lists, evidence chronologies, discovery trackers, deadlines, damages tables, and privilege logs.
+6. Add agent provenance and suggested-edits workflow.
+7. Add real-time presence and comment sync.
+8. Add CRDT co-editing for legal documents.
+9. Add CRDT co-editing for legal sheets.
+10. Add team roles, invites, artifact-level permissions, export, audit log, and retention controls.
 
 ## Non-Negotiables
 

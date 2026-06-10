@@ -26,3 +26,18 @@ Passing threshold for initial LegalCode work: 17 out of 21, with no 0 in source 
 - `cases/legal-research-plan.md`
 - `cases/compliance-gap-map.md`
 - `cases/team-collaboration-matter.md`
+
+## Golden Matter Fixtures
+
+- `matters/contract-dispute.json`
+- `matters/employment-claim.json`
+- `matters/landlord-tenant.json`
+- `matters/debt-defense.json`
+- `matters/pi-demand-package.json`
+
+## Reliability Gates
+
+- No filing-ready output without `humanApproval: approved`.
+- No verified legal citation without at least one source span.
+- No deadline may move beyond proposed/partially verified without a rule, triggering event, date, service method, and lawyer approval.
+- No agent action may omit context artifacts/sources from its provenance record.
