@@ -97,11 +97,13 @@ Sync:
 
 `GET /api/legalcode/workspace/artifacts` lists external workspace files linked to a matter.
 
+`POST /api/legalcode/workspace/conflicts/check` is the required writeback preflight. It resolves the artifact by `externalArtifactID`, reads current Google Drive or Microsoft Graph metadata through the local token vault, compares current ETag/revision values with the stored LegalCode artifact baseline, records the metadata-read operation, and returns `clean`, `conflict`, or `unknown`. Only `clean` may be passed to write/edit/export/sync execution, and execution must include the conflict-check operation ID for provenance.
+
 `POST /api/legalcode/workspace/execute` executes or dry-runs a matter-scoped operation after the desktop supplies an access token from the vault. It prepares and calls:
 - Google Drive metadata, Google Docs `batchUpdate`, and Google Sheets `batchUpdate`.
 - Microsoft Graph OneDrive/SharePoint item, Word content, and Excel workbook endpoints.
 
-Execution blocks write/edit/export/sync operations unless the request includes human approval, an audit event, and source spans. Dry-runs return the redacted HTTP request without touching the external workspace.
+Execution blocks write/edit/export/sync operations unless the request includes human approval, an audit event, source spans, `conflictStatus: "clean"`, and `conflictCheckOperationID`. Dry-runs return the redacted HTTP request without touching the external workspace.
 
 `GET /api/legalcode/workspace/operations` lists recorded workspace operation history for a matter. `POST /api/legalcode/workspace/execute` records each prepared or executed operation in `legal_workspace_operation`.
 
@@ -115,7 +117,8 @@ The next implementation layer should add OAuth callback/device flow UI, file pic
 - No agent reads workspace content unless the external artifact is imported or linked to the selected matter.
 - No broad provider scope is requested when a narrower provider-supported scope satisfies the requested operation.
 - No imported quote or factual claim is presented as verified unless it has source spans.
-- No workspace operation is considered complete unless it has an audit event.
+- No workspace write/edit/export/sync operation runs unless the latest conflict preflight returned `clean`.
+- No workspace write/edit/export/sync operation is considered complete unless it has an audit event.
 - No ordinary matter, artifact, connection, or operation record may store raw provider tokens.
 
 ## Provider References

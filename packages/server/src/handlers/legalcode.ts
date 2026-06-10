@@ -552,6 +552,81 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
       }),
     )
     .handle(
+      "legalcode.workspace.conflict.check",
+      Effect.fn(function* (ctx) {
+        const store = yield* LegalCodeStore.Service
+        const artifact = yield* store.getExternalArtifact(ctx.payload.externalArtifactID)
+        if (!artifact) {
+          return yield* Effect.fail(
+            new InvalidRequestError({
+              message: `External artifact not found: ${ctx.payload.externalArtifactID}`,
+              kind: "legalcode_workspace",
+              field: "externalArtifactID",
+            }),
+          )
+        }
+        if (artifact.matterID !== ctx.payload.matterID) {
+          return yield* Effect.fail(
+            new InvalidRequestError({
+              message: "External artifact does not belong to the requested matter.",
+              kind: "legalcode_workspace",
+              field: "matterID",
+            }),
+          )
+        }
+
+        const vault = yield* LegalCodeTokenVault.Service
+        const token = yield* vault.get(ctx.payload.tokenVaultRef)
+        if (!token) {
+          return yield* Effect.fail(
+            new InvalidRequestError({
+              message: `Token vault reference not found: ${ctx.payload.tokenVaultRef}`,
+              kind: "legalcode_workspace",
+              field: "tokenVaultRef",
+            }),
+          )
+        }
+        if (token.provider !== artifact.provider) {
+          return yield* Effect.fail(
+            new InvalidRequestError({
+              message: `Token vault provider ${token.provider} does not match artifact provider ${artifact.provider}`,
+              kind: "legalcode_workspace",
+              field: "provider",
+            }),
+          )
+        }
+
+        const data = yield* Effect.tryPromise({
+          try: () =>
+            LegalCodeWorkspace.importArtifactMetadata({
+              matterID: artifact.matterID,
+              connectionID: artifact.connectionID,
+              externalArtifactID: artifact.id,
+              provider: artifact.provider,
+              app: artifact.app,
+              tokenVaultRef: ctx.payload.tokenVaultRef,
+              externalID: artifact.externalID,
+              actor: ctx.payload.actor,
+              dryRun: ctx.payload.dryRun,
+              accessToken: token.accessToken,
+            }),
+          catch: (error) => workspaceError(error, "Workspace conflict check failed"),
+        })
+        yield* store.recordOperation({ operation: data.operation, result: data.result })
+        const comparison = LegalCodeWorkspace.checkExternalArtifactConflict(artifact, data.result)
+        return {
+          data: {
+            artifact,
+            operation: data.operation,
+            request: data.request,
+            result: data.result,
+            blockedReasons: data.blockedReasons,
+            ...comparison,
+          },
+        }
+      }),
+    )
+    .handle(
       "legalcode.workspace.operation.list",
       Effect.fn(function* (ctx) {
         const store = yield* LegalCodeStore.Service

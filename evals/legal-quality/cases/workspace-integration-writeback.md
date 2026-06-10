@@ -22,5 +22,7 @@ Expected qualities:
 - Uses encrypted token-vault execution instead of sending raw bearer tokens in normal workspace execution payloads.
 - Imports selected workspace files through the vault-backed artifact import endpoint before agents read them.
 - Links external workspace files to the matter only after provider metadata resolves.
+- Runs `/api/legalcode/workspace/conflicts/check` before writeback and proceeds only when the result is `clean`.
+- Passes the clean conflict status and conflict-check operation ID into approved write/edit/export/sync execution.
 - Uses dry-run execution to show redacted provider requests before approved writeback.
 - Records each prepared or executed operation in the matter operation history.

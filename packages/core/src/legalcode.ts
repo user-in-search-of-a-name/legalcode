@@ -164,6 +164,9 @@ export const WorkspaceSyncDirection = Schema.Literals(
 )
 export type WorkspaceSyncDirection = typeof WorkspaceSyncDirection.Type
 
+export const WorkspaceConflictStatus = Schema.Literals("clean", "conflict", "unknown")
+export type WorkspaceConflictStatus = typeof WorkspaceConflictStatus.Type
+
 export const SourceSpan = Schema.Struct({
   sourceID: SourceID,
   label: Schema.String.pipe(Schema.optional),
@@ -489,6 +492,8 @@ export const WorkspaceExecuteRequest = Schema.Struct({
   auditEventID: AuditEventID.pipe(Schema.optional),
   expectedETag: Schema.String.pipe(Schema.optional),
   expectedRevision: Schema.String.pipe(Schema.optional),
+  conflictStatus: WorkspaceConflictStatus.pipe(Schema.optional),
+  conflictCheckOperationID: WorkspaceOperationID.pipe(Schema.optional),
   content: Schema.String.pipe(Schema.optional),
   contentType: Schema.String.pipe(Schema.optional),
   body: Schema.Unknown.pipe(Schema.optional),
@@ -515,6 +520,8 @@ export const WorkspaceExecuteWithVaultRequest = Schema.Struct({
   auditEventID: AuditEventID.pipe(Schema.optional),
   expectedETag: Schema.String.pipe(Schema.optional),
   expectedRevision: Schema.String.pipe(Schema.optional),
+  conflictStatus: WorkspaceConflictStatus.pipe(Schema.optional),
+  conflictCheckOperationID: WorkspaceOperationID.pipe(Schema.optional),
   content: Schema.String.pipe(Schema.optional),
   contentType: Schema.String.pipe(Schema.optional),
   body: Schema.Unknown.pipe(Schema.optional),
@@ -552,6 +559,7 @@ export type WorkspaceExecuteResponse = typeof WorkspaceExecuteResponse.Type
 export const WorkspaceArtifactImportRequest = Schema.Struct({
   matterID: MatterID,
   connectionID: WorkspaceConnectionID,
+  externalArtifactID: ExternalArtifactID.pipe(Schema.optional),
   provider: WorkspaceProvider,
   app: WorkspaceApp,
   tokenVaultRef: WorkspaceTokenVaultRef,
@@ -574,6 +582,31 @@ export const WorkspaceArtifactImportResponse = Schema.Struct({
   blockedReasons: Schema.Array(Schema.String),
 })
 export type WorkspaceArtifactImportResponse = typeof WorkspaceArtifactImportResponse.Type
+
+export const WorkspaceConflictCheckRequest = Schema.Struct({
+  matterID: MatterID,
+  externalArtifactID: ExternalArtifactID,
+  tokenVaultRef: WorkspaceTokenVaultRef,
+  actor: Schema.String,
+  dryRun: Schema.Boolean.pipe(Schema.optional),
+})
+export type WorkspaceConflictCheckRequest = typeof WorkspaceConflictCheckRequest.Type
+
+export const WorkspaceConflictCheckResponse = Schema.Struct({
+  artifact: ExternalArtifact,
+  operation: WorkspaceOperation,
+  request: WorkspaceExecutePreparedRequest,
+  result: WorkspaceExecuteResult.pipe(Schema.optional),
+  status: WorkspaceConflictStatus,
+  storedETag: Schema.String.pipe(Schema.optional),
+  storedRevision: Schema.String.pipe(Schema.optional),
+  currentETag: Schema.String.pipe(Schema.optional),
+  currentRevision: Schema.String.pipe(Schema.optional),
+  conflictReasons: Schema.Array(Schema.String),
+  blockedReasons: Schema.Array(Schema.String),
+  metadata: Schema.Record(Schema.String, Schema.Unknown),
+})
+export type WorkspaceConflictCheckResponse = typeof WorkspaceConflictCheckResponse.Type
 
 export const WorkspaceConnectionCreate = Schema.Struct({
   matterID: MatterID.pipe(Schema.optional),

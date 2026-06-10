@@ -19,6 +19,9 @@ export interface Interface {
     provider?: LegalCode.WorkspaceProvider
   }) => Effect.Effect<LegalCode.WorkspaceConnection[]>
   readonly linkExternalArtifact: (input: LegalCode.ExternalArtifactLink) => Effect.Effect<LegalCode.ExternalArtifact>
+  readonly getExternalArtifact: (
+    id: LegalCode.ExternalArtifactID,
+  ) => Effect.Effect<LegalCode.ExternalArtifact | undefined>
   readonly listExternalArtifacts: (input: {
     matterID: LegalCode.MatterID
     provider?: LegalCode.WorkspaceProvider
@@ -145,6 +148,16 @@ export const layer = Layer.effect(
           humanApproval: input.humanApproval,
           metadata: input.metadata,
         }
+      }),
+
+      getExternalArtifact: Effect.fn("LegalCodeStore.getExternalArtifact")(function* (id) {
+        const row = yield* db
+          .select()
+          .from(LegalExternalArtifactTable)
+          .where(eq(LegalExternalArtifactTable.id, id))
+          .get()
+          .pipe(Effect.orDie)
+        return row ? externalArtifactFromRow(row) : undefined
       }),
 
       listExternalArtifacts: Effect.fn("LegalCodeStore.listExternalArtifacts")(function* (input) {

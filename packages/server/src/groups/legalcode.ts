@@ -161,6 +161,20 @@ export const LegalCodeGroup = HttpApiGroup.make("server.legalcode")
     ),
   )
   .add(
+    HttpApiEndpoint.post("legalcode.workspace.conflict.check", "/api/legalcode/workspace/conflicts/check", {
+      payload: LegalCode.WorkspaceConflictCheckRequest,
+      success: Schema.Struct({ data: LegalCode.WorkspaceConflictCheckResponse }),
+      error: [InvalidRequestError, ServiceUnavailableError],
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.conflict.check",
+        summary: "Check workspace artifact conflict",
+        description:
+          "Read current provider metadata through the local token vault and compare it with the stored LegalCode ETag/revision before writeback.",
+      }),
+    ),
+  )
+  .add(
     HttpApiEndpoint.get("legalcode.workspace.operation.list", "/api/legalcode/workspace/operations", {
       query: WorkspaceMatterProviderQuery,
       success: Schema.Struct({ data: Schema.Array(LegalCode.WorkspaceOperation) }),

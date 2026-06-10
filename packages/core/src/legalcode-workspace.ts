@@ -199,6 +199,7 @@ export async function importArtifactMetadata(
   return execute({
     matterID: input.matterID,
     connectionID: input.connectionID,
+    externalArtifactID: input.externalArtifactID,
     provider: input.provider,
     app,
     operation: "import",
@@ -261,6 +262,57 @@ export function normalizeExternalArtifactMetadata(
   }
 }
 
+export function checkExternalArtifactConflict(
+  artifact: LegalCode.ExternalArtifact,
+  result: LegalCode.WorkspaceExecuteResult | undefined,
+): Pick<
+  LegalCode.WorkspaceConflictCheckResponse,
+  "status" | "storedETag" | "storedRevision" | "currentETag" | "currentRevision" | "conflictReasons" | "metadata"
+> {
+  const current = result?.ok ? extractMetadataVersion(artifact.provider, result) : {}
+  const conflictReasons: string[] = []
+  const unknownReasons: string[] = []
+  const comparable: string[] = []
+
+  if (artifact.etag && current.etag) {
+    comparable.push("etag")
+    if (artifact.etag !== current.etag) {
+      conflictReasons.push("External artifact ETag changed since the last LegalCode import/sync.")
+    }
+  }
+  if (artifact.revision && current.revision) {
+    comparable.push("revision")
+    if (artifact.revision !== current.revision) {
+      conflictReasons.push("External artifact revision changed since the last LegalCode import/sync.")
+    }
+  }
+  if (!artifact.etag && !artifact.revision) {
+    unknownReasons.push("LegalCode has no stored ETag or revision baseline for this external artifact.")
+  }
+  if (!current.etag && !current.revision) {
+    unknownReasons.push("The workspace provider did not return an ETag or revision for this artifact.")
+  }
+  if (comparable.length === 0 && unknownReasons.length === 0) {
+    unknownReasons.push("No comparable ETag or revision signal was available.")
+  }
+
+  const status: LegalCode.WorkspaceConflictStatus =
+    conflictReasons.length > 0 ? "conflict" : unknownReasons.length > 0 ? "unknown" : "clean"
+  return {
+    status,
+    storedETag: artifact.etag,
+    storedRevision: artifact.revision,
+    currentETag: current.etag,
+    currentRevision: current.revision,
+    conflictReasons: conflictReasons.length > 0 ? conflictReasons : unknownReasons,
+    metadata: cleanRecord({
+      providerMetadata: isRecord(result?.json) ? result?.json : undefined,
+      comparableSignals: comparable,
+      checkedAt: new Date().toISOString(),
+    }),
+  }
+}
+
 function validateExecution(input: LegalCode.WorkspaceExecuteRequest) {
   const reasons: string[] = []
   if (writeOperations.has(input.operation) && input.approval !== "approved") {
@@ -271,6 +323,12 @@ function validateExecution(input: LegalCode.WorkspaceExecuteRequest) {
   }
   if (writeOperations.has(input.operation) && input.sourceSpans.length === 0) {
     reasons.push("Workspace write/edit/export/sync operations require source spans for provenance.")
+  }
+  if (writeOperations.has(input.operation) && input.conflictStatus !== "clean") {
+    reasons.push("Workspace write/edit/export/sync operations require a clean conflict check before execution.")
+  }
+  if (writeOperations.has(input.operation) && !input.conflictCheckOperationID) {
+    reasons.push("Workspace write/edit/export/sync operations require the conflict check operation ID for provenance.")
   }
   if (input.provider === "microsoft_365" && input.app === "sharepoint" && !input.siteID) {
     reasons.push("SharePoint operations require a siteID.")
@@ -423,6 +481,8 @@ function makeOperation(
       httpMethod: input.httpMethod,
       expectedETag: input.expectedETag,
       expectedRevision: input.expectedRevision,
+      conflictStatus: input.conflictStatus,
+      conflictCheckOperationID: input.conflictCheckOperationID,
       dryRun: input.dryRun === true,
     },
   }
@@ -465,6 +525,20 @@ function stringField(record: Record<string, unknown>, key: string) {
 
 function cleanRecord(record: Record<string, unknown>) {
   return Object.fromEntries(Object.entries(record).filter(([, value]) => value !== undefined))
+}
+
+function extractMetadataVersion(provider: LegalCode.WorkspaceProvider, result: LegalCode.WorkspaceExecuteResult) {
+  const json = isRecord(result.json) ? result.json : {}
+  if (provider === "google_workspace") {
+    return {
+      etag: result.etag ?? stringField(json, "md5Checksum"),
+      revision: stringField(json, "version") ?? stringField(json, "modifiedTime") ?? result.revision,
+    }
+  }
+  return {
+    etag: result.etag ?? stringField(json, "eTag"),
+    revision: result.revision ?? stringField(json, "cTag") ?? stringField(json, "lastModifiedDateTime"),
+  }
 }
 
 function randomBase64URL(bytes: number) {

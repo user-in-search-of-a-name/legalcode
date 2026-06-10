@@ -18,7 +18,7 @@ Required checks:
 - List OAuth scopes and mark any scope that may require admin consent.
 - For selected cloud files, prefer `/api/legalcode/workspace/artifacts/import` so provider metadata is resolved through the local token vault before linking.
 - For reads/imports, identify what source spans or extracted text should become LegalCode sources.
-- For writes/edits/exports/sync, require explicit human approval and an audit event before execution.
+- For writes/edits/exports/sync, require `/api/legalcode/workspace/conflicts/check`, a `clean` conflict status, the conflict-check operation ID, explicit human approval, source spans, and an audit event before execution.
 - Flag conflicts, privilege risks, overwrites, missing source anchors, missing approval, and missing audit provenance.
 
 Return a concise operation plan that can be reviewed before LegalCode touches the external workspace.
