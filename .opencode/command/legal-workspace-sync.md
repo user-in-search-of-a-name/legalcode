@@ -21,6 +21,7 @@ Required checks:
 - Use the desktop LegalCode workspace bridge for provider auth/picker URLs and parse `legalcode://workspace/oauth/callback` or `legalcode://workspace/file-selected` callbacks.
 - Prefer the `/legalcode/workspace` screen for human-visible connect, import, conflict preflight, and approved writeback actions.
 - Prefer `createLegalCodeWorkspaceClient` from `@opencode-ai/app` for app-side connect/import/writeback sequencing.
+- Use app-side picker URL builders for Google Drive search, OneDrive/Office, SharePoint libraries, and selected-file callbacks instead of trusting arbitrary pasted URLs.
 - For selected cloud files, prefer `/api/legalcode/workspace/artifacts/import` so provider metadata is resolved through the local token vault before linking.
 - For linked cloud files, use the vault-backed read action before summarizing or relying on external workspace contents.
 - For reads/imports, identify what source spans or extracted text should become LegalCode sources.

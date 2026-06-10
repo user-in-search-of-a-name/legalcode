@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test"
-import { createLegalCodeWorkspaceClient, prepareLegalCodeWorkspacePayload } from "./workspace-client"
+import {
+  createLegalCodeWorkspaceClient,
+  createLegalCodeWorkspacePickerURL,
+  createLegalCodeWorkspaceSelectedFileCallbackURL,
+  prepareLegalCodeWorkspacePayload,
+} from "./workspace-client"
 
 type RecordedRequest = {
   url: string
@@ -26,6 +31,42 @@ function createFetch(responses: unknown[]) {
 }
 
 describe("LegalCode workspace client", () => {
+  test("builds safe provider picker launch URLs", () => {
+    expect(
+      createLegalCodeWorkspacePickerURL({
+        provider: "google_workspace",
+        app: "google_docs",
+      }),
+    ).toBe("https://drive.google.com/drive/search?q=type%3Adocument")
+    expect(
+      createLegalCodeWorkspacePickerURL({
+        provider: "microsoft_365",
+        app: "sharepoint",
+        sharePointHost: "tenant.sharepoint.com",
+        sharePointSitePath: "/sites/legal/Shared Documents",
+      }),
+    ).toBe("https://tenant.sharepoint.com/sites/legal/Shared%20Documents")
+  })
+
+  test("builds selected-file callbacks for desktop deep-link handoff", () => {
+    expect(
+      createLegalCodeWorkspaceSelectedFileCallbackURL({
+        provider: "google_workspace",
+        app: "google_docs",
+        externalID: "file-1",
+        name: "Demand letter",
+      }),
+    ).toBe("legalcode://workspace/file-selected?provider=google_workspace&app=google_docs&fileId=file-1&name=Demand+letter")
+    expect(
+      createLegalCodeWorkspaceSelectedFileCallbackURL({
+        provider: "microsoft_365",
+        app: "sharepoint",
+        externalID: "item-1",
+        siteID: "site-1",
+      }),
+    ).toBe("legalcode://workspace/file-selected?provider=microsoft_365&app=sharepoint&itemId=item-1&siteID=site-1")
+  })
+
   test("prepares JSON bodies for Google Docs, Sheets, and Excel workspace updates", () => {
     expect(
       prepareLegalCodeWorkspacePayload({

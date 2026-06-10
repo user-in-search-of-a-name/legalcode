@@ -23,6 +23,22 @@ export type LegalCodeWorkspacePayloadInput = {
   content: string
   workspacePath?: string
 }
+export type LegalCodeWorkspacePickerInput = {
+  provider: LegalCode.WorkspaceProvider
+  app: LegalCode.WorkspaceApp
+  query?: string
+  sharePointHost?: string
+  sharePointSitePath?: string
+}
+export type LegalCodeWorkspaceSelectedFileInput = {
+  provider: LegalCode.WorkspaceProvider
+  app: LegalCode.WorkspaceApp
+  externalID: string
+  siteID?: string
+  name?: string
+  mimeType?: string
+  webURL?: string
+}
 
 export function createLegalCodeWorkspaceClient(input: ClientInput) {
   const request = createRequester(input)
@@ -85,6 +101,14 @@ export function createLegalCodeWorkspaceClient(input: ClientInput) {
       await input.workspaceBridge?.openPickerURL(url)
     },
 
+    pickerURL(payload: LegalCodeWorkspacePickerInput) {
+      return createLegalCodeWorkspacePickerURL(payload)
+    },
+
+    selectedFileCallbackURL(payload: LegalCodeWorkspaceSelectedFileInput) {
+      return createLegalCodeWorkspaceSelectedFileCallbackURL(payload)
+    },
+
     importSelectedFile(payload: LegalCode.WorkspaceArtifactImportRequest) {
       return request<LegalCode.WorkspaceArtifactImportResponse>("/api/legalcode/workspace/artifacts/import", {
         method: "POST",
@@ -130,6 +154,23 @@ export function prepareLegalCodeWorkspacePayload(
   if (!content) return {}
   if (workspaceAppExpectsJSON(input)) return { body: parseWorkspaceJSON(content) }
   return { content: input.content, contentType: "text/plain" }
+}
+
+export function createLegalCodeWorkspacePickerURL(input: LegalCodeWorkspacePickerInput) {
+  if (input.provider === "google_workspace") return googleWorkspacePickerURL(input)
+  return microsoftWorkspacePickerURL(input)
+}
+
+export function createLegalCodeWorkspaceSelectedFileCallbackURL(input: LegalCodeWorkspaceSelectedFileInput) {
+  const url = new URL("legalcode://workspace/file-selected")
+  url.searchParams.set("provider", input.provider)
+  url.searchParams.set("app", input.app)
+  url.searchParams.set(input.provider === "google_workspace" ? "fileId" : "itemId", input.externalID)
+  if (input.siteID) url.searchParams.set("siteID", input.siteID)
+  if (input.name) url.searchParams.set("name", input.name)
+  if (input.mimeType) url.searchParams.set("mimeType", input.mimeType)
+  if (input.webURL) url.searchParams.set("webURL", input.webURL)
+  return url.toString()
 }
 
 function createRequester(input: ClientInput) {
@@ -201,4 +242,44 @@ function parseWorkspaceJSON(content: string) {
   } catch {
     throw new Error("Workspace payload must be valid JSON for this provider app.")
   }
+}
+
+function googleWorkspacePickerURL(input: LegalCodeWorkspacePickerInput) {
+  const url = new URL("https://drive.google.com/drive/search")
+  const query = input.query?.trim() || googleDefaultSearchQuery(input.app)
+  if (query) url.searchParams.set("q", query)
+  return url.toString()
+}
+
+function googleDefaultSearchQuery(app: LegalCode.WorkspaceApp) {
+  if (app === "google_docs") return "type:document"
+  if (app === "google_sheets") return "type:spreadsheet"
+  return ""
+}
+
+function microsoftWorkspacePickerURL(input: LegalCodeWorkspacePickerInput) {
+  if (input.app === "sharepoint") {
+    const host = normalizeSharePointHost(input.sharePointHost)
+    const sitePath = normalizeSharePointSitePath(input.sharePointSitePath)
+    const url = new URL(`https://${host}${sitePath}`)
+    if (input.query?.trim()) url.searchParams.set("q", input.query.trim())
+    return url.toString()
+  }
+
+  const url = new URL(input.app === "excel" || input.app === "word" ? "https://www.office.com/onedrive" : "https://onedrive.live.com/")
+  if (input.query?.trim()) url.searchParams.set("qt", "search")
+  if (input.query?.trim()) url.searchParams.set("q", input.query.trim())
+  return url.toString()
+}
+
+function normalizeSharePointHost(input: string | undefined) {
+  const host = input?.trim().replace(/^https?:\/\//, "").replace(/\/.*$/, "")
+  if (!host) throw new Error("SharePoint picker URLs require a tenant SharePoint host.")
+  if (!host.endsWith(".sharepoint.com")) throw new Error("SharePoint picker host must end with .sharepoint.com.")
+  return host
+}
+
+function normalizeSharePointSitePath(input: string | undefined) {
+  const trimmed = input?.trim() || "/"
+  return trimmed.startsWith("/") ? trimmed : `/${trimmed}`
 }

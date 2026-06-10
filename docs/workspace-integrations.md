@@ -101,7 +101,7 @@ The desktop app exposes this workflow at `/legalcode/workspace`. The screen is m
 
 `POST /api/legalcode/workspace/artifacts/import` is the preferred picker handoff endpoint. The desktop sends the selected provider file ID, connection ID, matter ID, app, and `tokenVaultRef`; LegalCode resolves the token locally, reads provider metadata, records the import operation, and then links the file as an external matter artifact. Google imports use Drive `files.get` metadata, including shared-drive support; Microsoft imports use Graph `driveItem` metadata from OneDrive or the selected SharePoint site.
 
-Provider file pickers or custom picker pages should be opened through `platform.legalcodeWorkspace.openPickerURL(url)`. The desktop validates known Google Drive, Microsoft 365, OneDrive, SharePoint, Office, or `legalcode://` callback URLs. Selected files should return as `legalcode://workspace/file-selected?provider=...&app=...&fileId=...` for Google files or `legalcode://workspace/file-selected?provider=...&app=...&itemId=...&siteID=...` for Microsoft Graph items.
+Provider file pickers or custom picker pages should be opened through `platform.legalcodeWorkspace.openPickerURL(url)`. The desktop validates known Google Drive, Microsoft 365, OneDrive, SharePoint, Office, or `legalcode://` callback URLs. The app-side workspace client can build safe provider library URLs for Google Drive search, OneDrive/Office, and tenant SharePoint libraries. Selected files should return as `legalcode://workspace/file-selected?provider=...&app=...&fileId=...` for Google files or `legalcode://workspace/file-selected?provider=...&app=...&itemId=...&siteID=...` for Microsoft Graph items; the workspace screen can also build and apply those callbacks from selected IDs during the v1 manual picker flow.
 
 `GET /api/legalcode/workspace/artifacts` lists external workspace files linked to a matter.
 
@@ -121,7 +121,7 @@ Execution blocks write/edit/export/sync operations unless the request includes h
 
 `POST /api/legalcode/workspace/execute-with-vault` is the preferred execution path. It accepts a `tokenVaultRef`, resolves the bearer token inside the local vault, executes or dry-runs the operation, and records operation history without putting provider tokens in ordinary client payloads.
 
-The next implementation layer should add provider-specific picker launchers, richer conflict-resolution screens, and deeper Matter Command Center navigation around the workspace records.
+The next implementation layer should add embedded provider picker SDK flows, richer conflict-resolution screens, and deeper Matter Command Center navigation around the workspace records.
 
 ## Acceptance Gates
 

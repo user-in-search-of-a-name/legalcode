@@ -74,6 +74,10 @@ export default function LegalCodeWorkspacePage() {
   })
   const [picker, setPicker] = createStore({
     url: "",
+    query: "",
+    sharePointHost: "",
+    sharePointSitePath: "",
+    callbackURL: "",
     connectionID: "",
     tokenVaultRef: "",
     provider: "google_workspace" as LegalCode.WorkspaceProvider,
@@ -300,13 +304,34 @@ export default function LegalCodeWorkspacePage() {
             <Field label="Picker URL">
               <input class={inputClass} value={picker.url} onInput={(event) => setPicker("url", event.currentTarget.value)} />
             </Field>
-            <button
-              class={buttonClass}
-              disabled={!picker.url || loading()}
-              onClick={() => run("Opening workspace picker...", async () => client()!.openPickerURL(picker.url))}
-            >
-              Open Picker
-            </button>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                class={buttonClass}
+                disabled={loading()}
+                onClick={() =>
+                  run("Building provider picker URL...", async () => {
+                    const url = client()!.pickerURL({
+                      provider: picker.provider,
+                      app: picker.app,
+                      query: picker.query || undefined,
+                      sharePointHost: picker.sharePointHost || undefined,
+                      sharePointSitePath: picker.sharePointSitePath || undefined,
+                    })
+                    setPicker("url", url)
+                    setStatus({ tone: "ok", text: "Provider picker URL prepared." })
+                  })
+                }
+              >
+                Build Picker
+              </button>
+              <button
+                class={buttonClass}
+                disabled={!picker.url || loading()}
+                onClick={() => run("Opening workspace picker...", async () => client()!.openPickerURL(picker.url))}
+              >
+                Open Picker
+              </button>
+            </div>
             <Field label="Connection ID">
               <input class={inputClass} value={picker.connectionID} onInput={(event) => setPicker("connectionID", event.currentTarget.value)} />
             </Field>
@@ -331,6 +356,51 @@ export default function LegalCodeWorkspacePage() {
             <Field label="SharePoint Site ID">
               <input class={inputClass} value={picker.siteID} onInput={(event) => setPicker("siteID", event.currentTarget.value)} />
             </Field>
+            <Field label="Picker Search">
+              <input class={inputClass} value={picker.query} onInput={(event) => setPicker("query", event.currentTarget.value)} />
+            </Field>
+            <div class="grid grid-cols-2 gap-2">
+              <Field label="SharePoint Host">
+                <input class={inputClass} value={picker.sharePointHost} placeholder="tenant.sharepoint.com" onInput={(event) => setPicker("sharePointHost", event.currentTarget.value)} />
+              </Field>
+              <Field label="SharePoint Path">
+                <input class={inputClass} value={picker.sharePointSitePath} placeholder="/sites/legal/Shared Documents" onInput={(event) => setPicker("sharePointSitePath", event.currentTarget.value)} />
+              </Field>
+            </div>
+            <Field label="Selected File Callback">
+              <input class={inputClass} value={picker.callbackURL} onInput={(event) => setPicker("callbackURL", event.currentTarget.value)} />
+            </Field>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                class={buttonClass}
+                disabled={!picker.externalID || loading()}
+                onClick={() =>
+                  run("Building selected-file callback...", async () => {
+                    const url = client()!.selectedFileCallbackURL({
+                      provider: picker.provider,
+                      app: picker.app,
+                      externalID: picker.externalID,
+                      siteID: picker.siteID || undefined,
+                    })
+                    setPicker("callbackURL", url)
+                    setStatus({ tone: "ok", text: "Selected-file callback prepared." })
+                  })
+                }
+              >
+                Build Callback
+              </button>
+              <button
+                class={buttonClass}
+                disabled={!picker.callbackURL || loading()}
+                onClick={() =>
+                  run("Applying selected-file callback...", async () => {
+                    handleWorkspaceLinks([picker.callbackURL])
+                  })
+                }
+              >
+                Apply Callback
+              </button>
+            </div>
             <button
               class={buttonClass}
               disabled={!matter.matterID || !picker.connectionID || !picker.tokenVaultRef || !picker.externalID || loading()}
