@@ -23,6 +23,10 @@ const WorkspaceMatterProviderQuery = Schema.Struct({
   provider: LegalCode.WorkspaceProvider.pipe(Schema.optional),
 })
 
+const WorkspaceTokenVaultListQuery = Schema.Struct({
+  provider: LegalCode.WorkspaceProvider.pipe(Schema.optional),
+})
+
 export const LegalCodeGroup = HttpApiGroup.make("server.legalcode")
   .add(
     HttpApiEndpoint.get("legalcode.capabilities", "/api/legalcode/capabilities", {
@@ -156,6 +160,45 @@ export const LegalCodeGroup = HttpApiGroup.make("server.legalcode")
     ),
   )
   .add(
+    HttpApiEndpoint.post("legalcode.workspace.token.store", "/api/legalcode/workspace/tokens", {
+      payload: LegalCode.WorkspaceTokenVaultStore,
+      success: Schema.Struct({ data: LegalCode.WorkspaceTokenVaultInfo }),
+      error: InvalidRequestError,
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.token.store",
+        summary: "Store workspace token",
+        description: "Encrypt and store Google Workspace or Microsoft 365 OAuth tokens in the local LegalCode token vault.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.get("legalcode.workspace.token.list", "/api/legalcode/workspace/tokens", {
+      query: WorkspaceTokenVaultListQuery,
+      success: Schema.Struct({ data: Schema.Array(LegalCode.WorkspaceTokenVaultInfo) }),
+      error: InvalidRequestError,
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.token.list",
+        summary: "List workspace token references",
+        description: "List redacted token-vault metadata without returning provider tokens.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.delete("legalcode.workspace.token.remove", "/api/legalcode/workspace/tokens/:ref", {
+      params: { ref: LegalCode.WorkspaceTokenVaultRef },
+      success: Schema.Struct({ ok: Schema.Boolean }),
+      error: InvalidRequestError,
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.token.remove",
+        summary: "Remove workspace token",
+        description: "Delete an encrypted Google Workspace or Microsoft 365 token-vault entry.",
+      }),
+    ),
+  )
+  .add(
     HttpApiEndpoint.post("legalcode.workspace.execute", "/api/legalcode/workspace/execute", {
       payload: LegalCode.WorkspaceExecuteRequest,
       success: Schema.Struct({ data: LegalCode.WorkspaceExecuteResponse }),
@@ -166,6 +209,20 @@ export const LegalCodeGroup = HttpApiGroup.make("server.legalcode")
         summary: "Execute workspace operation",
         description:
           "Execute or dry-run a matter-scoped Google Workspace or Microsoft 365 read/write/edit operation with approval and audit gates.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.post("legalcode.workspace.execute.withVault", "/api/legalcode/workspace/execute-with-vault", {
+      payload: LegalCode.WorkspaceExecuteWithVaultRequest,
+      success: Schema.Struct({ data: LegalCode.WorkspaceExecuteResponse }),
+      error: [InvalidRequestError, ServiceUnavailableError],
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.execute.withVault",
+        summary: "Execute workspace operation with token vault",
+        description:
+          "Execute or dry-run a matter-scoped Google Workspace or Microsoft 365 operation by resolving the bearer token from the encrypted local vault.",
       }),
     ),
   )

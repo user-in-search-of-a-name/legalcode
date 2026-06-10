@@ -1,5 +1,6 @@
 import type { LegalCode } from "@opencode-ai/core/legalcode"
 import { LegalCodeStore } from "@opencode-ai/core/legalcode-store"
+import { LegalCodeTokenVault } from "@opencode-ai/core/legalcode-token-vault"
 import { LegalCodeWorkspace } from "@opencode-ai/core/legalcode-workspace"
 import { Effect } from "effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
@@ -374,6 +375,28 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
       }).pipe(Effect.map((data) => ({ data }))),
     )
     .handle(
+      "legalcode.workspace.token.store",
+      Effect.fn(function* (ctx) {
+        const vault = yield* LegalCodeTokenVault.Service
+        return { data: yield* vault.store(ctx.payload) }
+      }),
+    )
+    .handle(
+      "legalcode.workspace.token.list",
+      Effect.fn(function* (ctx) {
+        const vault = yield* LegalCodeTokenVault.Service
+        return { data: yield* vault.list(ctx.query.provider) }
+      }),
+    )
+    .handle(
+      "legalcode.workspace.token.remove",
+      Effect.fn(function* (ctx) {
+        const vault = yield* LegalCodeTokenVault.Service
+        yield* vault.remove(ctx.params.ref)
+        return { ok: true }
+      }),
+    )
+    .handle(
       "legalcode.workspace.connection.create",
       Effect.fn(function* (ctx) {
         const store = yield* LegalCodeStore.Service
@@ -421,6 +444,42 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
           }),
         ),
       ),
+    )
+    .handle(
+      "legalcode.workspace.execute.withVault",
+      Effect.fn(function* (ctx) {
+        const vault = yield* LegalCodeTokenVault.Service
+        const token = yield* vault.get(ctx.payload.tokenVaultRef)
+        if (!token) {
+          return yield* Effect.fail(
+            new InvalidRequestError({
+              message: `Token vault reference not found: ${ctx.payload.tokenVaultRef}`,
+              kind: "legalcode_workspace",
+              field: "tokenVaultRef",
+            }),
+          )
+        }
+        if (token.provider !== ctx.payload.provider) {
+          return yield* Effect.fail(
+            new InvalidRequestError({
+              message: `Token vault provider ${token.provider} does not match requested provider ${ctx.payload.provider}`,
+              kind: "legalcode_workspace",
+              field: "provider",
+            }),
+          )
+        }
+        const data = yield* Effect.tryPromise({
+          try: () =>
+            LegalCodeWorkspace.execute({
+              ...ctx.payload,
+              accessToken: token.accessToken,
+            }),
+          catch: (error) => workspaceError(error, "Workspace operation failed"),
+        })
+        const store = yield* LegalCodeStore.Service
+        yield* store.recordOperation({ operation: data.operation, result: data.result })
+        return { data }
+      }),
     ),
 )
 

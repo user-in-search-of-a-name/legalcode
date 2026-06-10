@@ -44,6 +44,8 @@ Workspace access is represented by three durable LegalCode records:
 
 Tokens must not be stored directly in matter records. A connection stores only a `tokenVaultRef`; the token vault implementation can be local keychain first and cloud-managed only for enabled team collaboration.
 
+The current local vault stores encrypted token blobs in the LegalCode data directory with file permissions restricted to the local user. Deployments should set `LEGALCODE_TOKEN_VAULT_KEY` or `OPENCODE_LEGALCODE_TOKEN_VAULT_KEY` from an OS keychain or enterprise secret manager. Without that variable, LegalCode derives a local machine-bound key from host/user/path information, which is acceptable only as a desktop bootstrap and not as enterprise key management.
+
 ## Operation Rules
 
 Reads:
@@ -75,6 +77,12 @@ Sync:
 
 `POST /api/legalcode/workspace/oauth/token` exchanges an authorization code for provider tokens. The response is intended for the desktop token vault; matter records should store only a `tokenVaultRef`.
 
+`POST /api/legalcode/workspace/tokens` encrypts and stores OAuth tokens in the local token vault and returns redacted token metadata plus a `tokenVaultRef`.
+
+`GET /api/legalcode/workspace/tokens` lists redacted token-vault metadata. It never returns access, refresh, or ID tokens.
+
+`DELETE /api/legalcode/workspace/tokens/:ref` removes a local token-vault entry.
+
 `POST /api/legalcode/workspace/connections` persists a Google Workspace or Microsoft 365 connection record with account/tenant metadata, granted scopes, enabled operation classes, and the token-vault reference.
 
 `GET /api/legalcode/workspace/connections` lists persisted provider connections, optionally filtered by matter and provider.
@@ -91,7 +99,9 @@ Execution blocks write/edit/export/sync operations unless the request includes h
 
 `GET /api/legalcode/workspace/operations` lists recorded workspace operation history for a matter. `POST /api/legalcode/workspace/execute` records each prepared or executed operation in `legal_workspace_operation`.
 
-The next implementation layer should add OAuth callback/device flow UI, encrypted token-vault storage, file picker handoff, and richer conflict-resolution screens.
+`POST /api/legalcode/workspace/execute-with-vault` is the preferred execution path. It accepts a `tokenVaultRef`, resolves the bearer token inside the local vault, executes or dry-runs the operation, and records operation history without putting provider tokens in ordinary client payloads.
+
+The next implementation layer should add OAuth callback/device flow UI, file picker handoff, and richer conflict-resolution screens.
 
 ## Acceptance Gates
 
@@ -100,6 +110,7 @@ The next implementation layer should add OAuth callback/device flow UI, encrypte
 - No broad provider scope is requested when a narrower provider-supported scope satisfies the requested operation.
 - No imported quote or factual claim is presented as verified unless it has source spans.
 - No workspace operation is considered complete unless it has an audit event.
+- No ordinary matter, artifact, connection, or operation record may store raw provider tokens.
 
 ## Provider References
 

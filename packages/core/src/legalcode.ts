@@ -53,6 +53,9 @@ export type ExternalArtifactID = typeof ExternalArtifactID.Type
 export const WorkspaceOperationID = makeID("wop", "LegalCode.WorkspaceOperationID")
 export type WorkspaceOperationID = typeof WorkspaceOperationID.Type
 
+export const WorkspaceTokenVaultRef = makeID("tvr", "LegalCode.WorkspaceTokenVaultRef")
+export type WorkspaceTokenVaultRef = typeof WorkspaceTokenVaultRef.Type
+
 export const Jurisdiction = Schema.Literals("us", "india", "other")
 export type Jurisdiction = typeof Jurisdiction.Type
 
@@ -341,7 +344,7 @@ export const WorkspaceConnection = Schema.Struct({
   readEnabled: Schema.Boolean,
   writeEnabled: Schema.Boolean,
   editEnabled: Schema.Boolean,
-  tokenVaultRef: Schema.String.pipe(Schema.optional),
+  tokenVaultRef: WorkspaceTokenVaultRef.pipe(Schema.optional),
   lastSyncAt: Schema.String.pipe(Schema.optional),
   metadata: Schema.Record(Schema.String, Schema.Unknown),
 })
@@ -470,6 +473,32 @@ export const WorkspaceExecuteRequest = Schema.Struct({
 })
 export type WorkspaceExecuteRequest = typeof WorkspaceExecuteRequest.Type
 
+export const WorkspaceExecuteWithVaultRequest = Schema.Struct({
+  matterID: MatterID,
+  connectionID: WorkspaceConnectionID,
+  externalArtifactID: ExternalArtifactID.pipe(Schema.optional),
+  provider: WorkspaceProvider,
+  app: WorkspaceApp,
+  operation: WorkspaceOperationKind,
+  tokenVaultRef: WorkspaceTokenVaultRef,
+  resourceID: Schema.String,
+  siteID: Schema.String.pipe(Schema.optional),
+  workspacePath: Schema.String.pipe(Schema.optional),
+  httpMethod: Schema.String.pipe(Schema.optional),
+  actor: Schema.String,
+  approval: HumanApprovalStatus,
+  inputSummary: Schema.String,
+  sourceSpans: Schema.Array(SourceSpan),
+  auditEventID: AuditEventID.pipe(Schema.optional),
+  expectedETag: Schema.String.pipe(Schema.optional),
+  expectedRevision: Schema.String.pipe(Schema.optional),
+  content: Schema.String.pipe(Schema.optional),
+  contentType: Schema.String.pipe(Schema.optional),
+  body: Schema.Unknown.pipe(Schema.optional),
+  dryRun: Schema.Boolean.pipe(Schema.optional),
+})
+export type WorkspaceExecuteWithVaultRequest = typeof WorkspaceExecuteWithVaultRequest.Type
+
 export const WorkspaceExecutePreparedRequest = Schema.Struct({
   method: Schema.String,
   url: Schema.String,
@@ -509,7 +538,7 @@ export const WorkspaceConnectionCreate = Schema.Struct({
   readEnabled: Schema.Boolean,
   writeEnabled: Schema.Boolean,
   editEnabled: Schema.Boolean,
-  tokenVaultRef: Schema.String.pipe(Schema.optional),
+  tokenVaultRef: WorkspaceTokenVaultRef.pipe(Schema.optional),
   metadata: Schema.Record(Schema.String, Schema.Unknown),
 })
 export type WorkspaceConnectionCreate = typeof WorkspaceConnectionCreate.Type
@@ -539,3 +568,31 @@ export const WorkspaceRecordOperation = Schema.Struct({
   result: WorkspaceExecuteResult.pipe(Schema.optional),
 })
 export type WorkspaceRecordOperation = typeof WorkspaceRecordOperation.Type
+
+export const WorkspaceTokenVaultStore = Schema.Struct({
+  provider: WorkspaceProvider,
+  accountEmail: Schema.String.pipe(Schema.optional),
+  accountLabel: Schema.String.pipe(Schema.optional),
+  tenantID: Schema.String.pipe(Schema.optional),
+  scopes: Schema.Array(Schema.String),
+  tokenType: Schema.String,
+  expiresIn: Schema.Number.pipe(Schema.optional),
+  accessToken: Schema.String,
+  refreshToken: Schema.String.pipe(Schema.optional),
+  idToken: Schema.String.pipe(Schema.optional),
+})
+export type WorkspaceTokenVaultStore = typeof WorkspaceTokenVaultStore.Type
+
+export const WorkspaceTokenVaultInfo = Schema.Struct({
+  ref: WorkspaceTokenVaultRef,
+  provider: WorkspaceProvider,
+  accountEmail: Schema.String.pipe(Schema.optional),
+  accountLabel: Schema.String.pipe(Schema.optional),
+  tenantID: Schema.String.pipe(Schema.optional),
+  scopes: Schema.Array(Schema.String),
+  tokenType: Schema.String,
+  expiresAt: Schema.String.pipe(Schema.optional),
+  timeCreated: Schema.String,
+  timeUpdated: Schema.String,
+})
+export type WorkspaceTokenVaultInfo = typeof WorkspaceTokenVaultInfo.Type
