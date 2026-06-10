@@ -59,6 +59,7 @@ export default function LegalCodeWorkspacePage() {
   const [operations, setOperations] = createSignal<LegalCode.WorkspaceOperation[]>([])
   const [lastConflict, setLastConflict] = createSignal<LegalCode.WorkspaceConflictCheckResponse>()
   const [lastRead, setLastRead] = createSignal<LegalCode.WorkspaceExecuteResponse>()
+  const [lastWritebackPreview, setLastWritebackPreview] = createSignal<LegalCode.WorkspaceExecuteResponse>()
 
   const [matter, setMatter] = createStore({
     matterID: "",
@@ -120,6 +121,20 @@ export default function LegalCodeWorkspacePage() {
     const read = lastRead()
     if (!read) return ""
     return JSON.stringify(read.result?.json ?? read.result?.text ?? read.request, null, 2)
+  })
+  const writebackPreview = createMemo(() => {
+    const preview = lastWritebackPreview()
+    if (!preview) return ""
+    return JSON.stringify(
+      {
+        operation: preview.operation,
+        request: preview.request,
+        blockedReasons: preview.blockedReasons,
+        result: preview.result,
+      },
+      null,
+      2,
+    )
   })
 
   const run = async (label: string, fn: () => Promise<void>) => {
@@ -188,6 +203,33 @@ export default function LegalCodeWorkspacePage() {
     setReadback("app", item.app)
     setReadback("resourceID", item.externalID)
   }
+
+  const writebackPayload = (dryRun: boolean) => ({
+    matterID: matterID(),
+    connectionID: writeback.connectionID as LegalCode.WorkspaceConnectionID,
+    externalArtifactID: writeback.externalArtifactID as LegalCode.ExternalArtifactID,
+    provider: writeback.provider,
+    app: writeback.app,
+    operation: writeback.operation,
+    tokenVaultRef: writeback.tokenVaultRef as LegalCode.WorkspaceTokenVaultRef,
+    resourceID: writeback.resourceID,
+    siteID: writeback.siteID || undefined,
+    workspacePath: writeback.workspacePath || undefined,
+    httpMethod: writeback.httpMethod || undefined,
+    actor: actor(),
+    approval: "approved" as const,
+    inputSummary: dryRun
+      ? "Lawyer-approved LegalCode workspace writeback dry run."
+      : "Lawyer-approved LegalCode workspace writeback.",
+    sourceSpans: [{ sourceID: writeback.sourceID as LegalCode.SourceID }],
+    auditEventID: writeback.auditEventID as LegalCode.AuditEventID,
+    dryRun,
+    ...prepareLegalCodeWorkspacePayload({
+      app: writeback.app,
+      content: writeback.content,
+      workspacePath: writeback.workspacePath || undefined,
+    }),
+  })
 
   onMount(() => {
     handleWorkspaceLinks(drainPendingDeepLinks(window))
@@ -586,7 +628,7 @@ export default function LegalCodeWorkspacePage() {
               <Field label="Approved Content / JSON">
                 <textarea class={`${inputClass} min-h-24 resize-y py-2`} value={writeback.content} onInput={(event) => setWriteback("content", event.currentTarget.value)} />
               </Field>
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid grid-cols-3 gap-2">
                 <button
                   class={buttonClass}
                   disabled={!matter.matterID || !writeback.externalArtifactID || !writeback.tokenVaultRef || loading()}
@@ -623,30 +665,33 @@ export default function LegalCodeWorkspacePage() {
                     loading()
                   }
                   onClick={() =>
+                    run("Preparing redacted workspace writeback dry run...", async () => {
+                      const response = await client()!.runApprovedWriteback(writebackPayload(true))
+                      setLastWritebackPreview(response)
+                      setStatus({ tone: "ok", text: "Dry run prepared. Review the redacted provider request before writing." })
+                      await refreshMatter()
+                    })
+                  }
+                >
+                  Dry Run
+                </button>
+                <button
+                  class={buttonClass}
+                  disabled={
+                    !matter.matterID ||
+                    !writeback.connectionID ||
+                    !writeback.externalArtifactID ||
+                    !writeback.tokenVaultRef ||
+                    !writeback.auditEventID ||
+                    !writeback.sourceID ||
+                    !writeback.resourceID ||
+                    !writeback.content.trim() ||
+                    (writeback.provider === "microsoft_365" && writeback.app === "sharepoint" && !writeback.siteID) ||
+                    loading()
+                  }
+                  onClick={() =>
                     run("Running approved workspace writeback...", async () => {
-                      await client()!.runApprovedWriteback({
-                        matterID: matterID(),
-                        connectionID: writeback.connectionID as LegalCode.WorkspaceConnectionID,
-                        externalArtifactID: writeback.externalArtifactID as LegalCode.ExternalArtifactID,
-                        provider: writeback.provider,
-                        app: writeback.app,
-                        operation: writeback.operation,
-                        tokenVaultRef: writeback.tokenVaultRef as LegalCode.WorkspaceTokenVaultRef,
-                        resourceID: writeback.resourceID,
-                        siteID: writeback.siteID || undefined,
-                        workspacePath: writeback.workspacePath || undefined,
-                        httpMethod: writeback.httpMethod || undefined,
-                        actor: actor(),
-                        approval: "approved",
-                        inputSummary: "Lawyer-approved LegalCode workspace writeback.",
-                        sourceSpans: [{ sourceID: writeback.sourceID as LegalCode.SourceID }],
-                        auditEventID: writeback.auditEventID as LegalCode.AuditEventID,
-                        ...prepareLegalCodeWorkspacePayload({
-                          app: writeback.app,
-                          content: writeback.content,
-                          workspacePath: writeback.workspacePath || undefined,
-                        }),
-                      })
+                      await client()!.runApprovedWriteback(writebackPayload(false))
                       setStatus({ tone: "ok", text: "Approved writeback completed after a clean conflict preflight." })
                       await refreshMatter()
                     })
@@ -662,6 +707,15 @@ export default function LegalCodeWorkspacePage() {
                     <div>Operation: {conflict().operation.id}</div>
                     <div>ETag: {conflict().currentETag ?? conflict().storedETag ?? "unknown"}</div>
                   </div>
+                )}
+              </Show>
+              <Show when={writebackPreview()}>
+                {(preview) => (
+                  <textarea
+                    class={`${inputClass} min-h-36 resize-y py-2 font-mono text-[11px]`}
+                    readOnly
+                    value={preview()}
+                  />
                 )}
               </Show>
             </Section>

@@ -26,7 +26,7 @@ Required checks:
 - For linked cloud files, use the vault-backed read action before summarizing or relying on external workspace contents.
 - For reads/imports, identify what source spans or extracted text should become LegalCode sources.
 - For writeback payloads, use structured JSON for Google Docs/Sheets and Excel operations and text content for Word/content replacement.
-- For writes/edits/exports/sync, require `/api/legalcode/workspace/conflicts/check`, a `clean` conflict status, the conflict-check operation ID, explicit human approval, source spans, and an audit event before execution.
+- For writes/edits/exports/sync, require `/api/legalcode/workspace/conflicts/check`, a `clean` conflict status, redacted dry-run preview, the conflict-check operation ID, explicit human approval, source spans, and an audit event before execution.
 - Flag conflicts, privilege risks, overwrites, missing source anchors, missing approval, and missing audit provenance.
 
 Return a concise operation plan that can be reviewed before LegalCode touches the external workspace.

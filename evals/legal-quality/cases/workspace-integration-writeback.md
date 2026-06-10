@@ -30,6 +30,6 @@ Expected qualities:
 - Links external workspace files to the matter only after provider metadata resolves.
 - Runs `/api/legalcode/workspace/conflicts/check` before writeback and proceeds only when the result is `clean`.
 - Passes the clean conflict status and conflict-check operation ID into approved write/edit/export/sync execution.
-- Uses dry-run execution to show redacted provider requests before approved writeback.
+- Uses dry-run execution from the visible workspace flow to show redacted provider requests before approved writeback.
 - Sends Google Docs/Sheets and Excel writeback as structured JSON bodies, not accidental plain text.
 - Records each prepared or executed operation in the matter operation history.

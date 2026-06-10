@@ -246,6 +246,72 @@ describe("LegalCode workspace client", () => {
     })
   })
 
+  test("carries dry-run writeback previews through clean conflict preflight", async () => {
+    const { fetch, requests } = createFetch([
+      {
+        data: {
+          artifact: { id: externalArtifactID },
+          operation: { id: operationID },
+          request: {
+            method: "GET",
+            url: "https://www.googleapis.com/drive/v3/files/file-1",
+            headers: {},
+            bodyKind: "none",
+          },
+          status: "clean",
+          currentETag: "etag-current",
+          conflictReasons: [],
+          blockedReasons: [],
+          metadata: {},
+        },
+      },
+      {
+        data: {
+          operation: { id: "wop_preview", status: "planned" },
+          request: {
+            method: "POST",
+            url: "https://docs.googleapis.com/v1/documents/file-1:batchUpdate",
+            headers: { authorization: "Bearer <redacted>" },
+            bodyKind: "json",
+          },
+          blockedReasons: [],
+        },
+      },
+    ])
+    const client = createLegalCodeWorkspaceClient({
+      server: { url: "http://127.0.0.1:4096" },
+      fetch,
+    })
+
+    await client.runApprovedWriteback({
+      matterID,
+      connectionID,
+      externalArtifactID,
+      provider: "google_workspace",
+      app: "google_docs",
+      operation: "edit",
+      tokenVaultRef,
+      resourceID: "file-1",
+      actor: "lawyer@example.com",
+      approval: "approved",
+      inputSummary: "Preview demand letter revision",
+      sourceSpans: [{ sourceID: "src_1" as never }],
+      auditEventID: "aud_1" as never,
+      body: { requests: [] },
+      dryRun: true,
+    })
+
+    expect(requests.map((request) => new URL(request.url).pathname)).toEqual([
+      "/api/legalcode/workspace/conflicts/check",
+      "/api/legalcode/workspace/execute-with-vault",
+    ])
+    expect(JSON.parse(String(requests[1]?.init?.body))).toMatchObject({
+      dryRun: true,
+      conflictStatus: "clean",
+      conflictCheckOperationID: operationID,
+    })
+  })
+
   test("blocks approved writeback when conflict preflight is not clean", async () => {
     const { fetch, requests } = createFetch([
       {
