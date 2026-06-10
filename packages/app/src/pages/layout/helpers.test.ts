@@ -1,9 +1,11 @@
 import { describe, expect, test } from "bun:test"
 import {
   collectNewSessionDeepLinks,
+  collectLegalCodeWorkspaceDeepLinks,
   collectOpenProjectDeepLinks,
   drainPendingDeepLinks,
   parseDeepLink,
+  parseLegalCodeWorkspaceDeepLink,
   parseNewSessionDeepLink,
 } from "./deep-links"
 import { type Session } from "@opencode-ai/sdk/v2/client"
@@ -109,6 +111,99 @@ describe("layout deep links", () => {
 
     expect(drainPendingDeepLinks(target)).toEqual(["opencode://open-project?directory=/a"])
     expect(drainPendingDeepLinks(target)).toEqual([])
+  })
+
+  test("parses LegalCode workspace OAuth callback deep links", () => {
+    expect(
+      parseLegalCodeWorkspaceDeepLink(
+        "legalcode://workspace/oauth/callback?provider=google_workspace&code=abc123&state=nonce",
+      ),
+    ).toEqual({
+      type: "workspace_oauth_callback",
+      provider: "google_workspace",
+      code: "abc123",
+      state: "nonce",
+      error: undefined,
+      errorDescription: undefined,
+    })
+    expect(
+      parseLegalCodeWorkspaceDeepLink(
+        "legalcode://workspace-oauth-callback?provider=microsoft_365&error=access_denied&error_description=nope",
+      ),
+    ).toEqual({
+      type: "workspace_oauth_callback",
+      provider: "microsoft_365",
+      code: undefined,
+      state: undefined,
+      error: "access_denied",
+      errorDescription: "nope",
+    })
+  })
+
+  test("parses LegalCode workspace file selection deep links", () => {
+    expect(
+      parseLegalCodeWorkspaceDeepLink(
+        [
+          "legalcode://workspace/file-selected",
+          "?provider=google_workspace&app=google_docs&fileId=file-1&name=Demand%20Letter",
+        ].join(""),
+      ),
+    ).toEqual({
+      type: "workspace_file_selected",
+      provider: "google_workspace",
+      app: "google_docs",
+      externalID: "file-1",
+      siteID: undefined,
+      name: "Demand Letter",
+      mimeType: undefined,
+      webURL: undefined,
+    })
+    expect(
+      parseLegalCodeWorkspaceDeepLink(
+        [
+          "legalcode://workspace-file-selected",
+          "?provider=microsoft_365&app=sharepoint&itemId=item-1&siteID=site-1",
+        ].join(""),
+      ),
+    ).toEqual({
+      type: "workspace_file_selected",
+      provider: "microsoft_365",
+      app: "sharepoint",
+      externalID: "item-1",
+      siteID: "site-1",
+      name: undefined,
+      mimeType: undefined,
+      webURL: undefined,
+    })
+  })
+
+  test("collects only valid LegalCode workspace deep links", () => {
+    const result = collectLegalCodeWorkspaceDeepLinks([
+      "legalcode://workspace/oauth/callback?code=abc",
+      "legalcode://workspace/file-selected?fileId=file-1",
+      "legalcode://workspace/file-selected",
+      "opencode://workspace/oauth/callback?code=ignored",
+    ])
+    expect(result).toEqual([
+      {
+        type: "workspace_oauth_callback",
+        provider: undefined,
+        code: "abc",
+        state: undefined,
+        error: undefined,
+        errorDescription: undefined,
+      },
+      {
+        type: "workspace_file_selected",
+        provider: undefined,
+        app: undefined,
+        externalID: "file-1",
+        siteID: undefined,
+        name: undefined,
+        mimeType: undefined,
+        webURL: undefined,
+      },
+    ])
   })
 })
 

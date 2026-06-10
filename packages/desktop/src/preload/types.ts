@@ -28,6 +28,11 @@ export type UpdaterAPI = {
   install: () => Promise<void>
 }
 
+export type LegalCodeWorkspaceAPI = {
+  openAuthorizationURL: (url: string) => Promise<void>
+  openPickerURL: (url: string) => Promise<void>
+}
+
 export type LinuxDisplayBackend = "wayland" | "auto"
 export type TitlebarTheme = {
   mode: "light" | "dark"
@@ -46,6 +51,7 @@ export type ElectronAPI = {
   awaitInitialization: () => Promise<ServerReadyData>
   wslServers: WslServersAPI
   updater: UpdaterAPI
+  legalcodeWorkspace: LegalCodeWorkspaceAPI
   consumeInitialDeepLinks: () => Promise<string[]>
   getDefaultServerUrl: () => Promise<string | null>
   setDefaultServerUrl: (url: string | null) => Promise<void>

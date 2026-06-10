@@ -57,6 +57,10 @@ const api: ElectronAPI = {
     check: () => ipcRenderer.invoke("updater-check"),
     install: () => ipcRenderer.invoke("updater-install"),
   },
+  legalcodeWorkspace: {
+    openAuthorizationURL: (url) => ipcRenderer.invoke("legalcode-workspace-open-authorization-url", url),
+    openPickerURL: (url) => ipcRenderer.invoke("legalcode-workspace-open-picker-url", url),
+  },
   consumeInitialDeepLinks: () => ipcRenderer.invoke("consume-initial-deep-links"),
   getDefaultServerUrl: () => ipcRenderer.invoke("get-default-server-url"),
   setDefaultServerUrl: (url) => ipcRenderer.invoke("set-default-server-url", url),

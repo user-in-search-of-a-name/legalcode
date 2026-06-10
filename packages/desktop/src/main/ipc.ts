@@ -12,6 +12,7 @@ import { getStore } from "./store"
 import { getPinchZoomEnabled, setPinchZoomEnabled, setTitlebar, updateTitlebar } from "./windows"
 import type { UpdaterController } from "./updater-controller"
 import { createUpdaterSubscriptions } from "./updater-subscriptions"
+import { validateLegalCodeWorkspaceURL } from "./legalcode-workspace-url"
 
 const pickerFilters = (ext?: string[]) => {
   if (!ext || ext.length === 0) return undefined
@@ -71,6 +72,14 @@ export function registerIpcHandlers(deps: Deps) {
   ipcMain.handle("updater-unsubscribe", (event) => updaterSubscriptions.delete(event.sender.id))
   ipcMain.handle("updater-check", () => deps.updater.check())
   ipcMain.handle("updater-install", () => deps.updater.install())
+  ipcMain.handle("legalcode-workspace-open-authorization-url", (_event: IpcMainInvokeEvent, url: string) => {
+    validateLegalCodeWorkspaceURL(url, "authorization")
+    return shell.openExternal(url)
+  })
+  ipcMain.handle("legalcode-workspace-open-picker-url", (_event: IpcMainInvokeEvent, url: string) => {
+    validateLegalCodeWorkspaceURL(url, "picker")
+    return shell.openExternal(url)
+  })
   ipcMain.handle("set-background-color", (_event: IpcMainInvokeEvent, color: string) => deps.setBackgroundColor(color))
   ipcMain.handle("export-debug-logs", () => deps.exportDebugLogs())
   ipcMain.handle("record-fatal-renderer-error", (_event: IpcMainInvokeEvent, error: FatalRendererError) =>

@@ -12,10 +12,12 @@ Inputs to request or infer:
 - External file IDs/URLs and intended direction: import, export, two-way sync, or workspace-authoritative.
 - Operation: read, write, edit, comment, suggest, import, export, or sync.
 - Whether lawyer approval has already been granted.
+- Whether the desktop flow should open a provider auth URL, a provider picker URL, or process a `legalcode://workspace/...` callback.
 
 Required checks:
 - Confirm the operation is matter-scoped and does not grant broad workspace access when a narrower scope is available.
 - List OAuth scopes and mark any scope that may require admin consent.
+- Use the desktop LegalCode workspace bridge for provider auth/picker URLs and parse `legalcode://workspace/oauth/callback` or `legalcode://workspace/file-selected` callbacks.
 - For selected cloud files, prefer `/api/legalcode/workspace/artifacts/import` so provider metadata is resolved through the local token vault before linking.
 - For reads/imports, identify what source spans or extracted text should become LegalCode sources.
 - For writes/edits/exports/sync, require `/api/legalcode/workspace/conflicts/check`, a `clean` conflict status, the conflict-check operation ID, explicit human approval, source spans, and an audit event before execution.

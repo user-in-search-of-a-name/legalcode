@@ -79,6 +79,8 @@ Sync:
 
 `POST /api/legalcode/workspace/connect/start` is the preferred desktop start endpoint. It generates a PKCE `state`, `codeVerifier`, `codeChallenge`, authorization URL, scopes, and optional matter binding for Google Workspace or Microsoft 365.
 
+The desktop renderer should open provider authorization URLs through `platform.legalcodeWorkspace.openAuthorizationURL(url)`. The Electron main process validates that authorization URLs target Google Accounts or Microsoft Login before opening the browser. OAuth redirects should return to `legalcode://workspace/oauth/callback?provider=...&code=...&state=...`, which the renderer parses as a LegalCode workspace deep link before calling `connect/finalize`.
+
 `POST /api/legalcode/workspace/connect/finalize` is the preferred desktop callback endpoint. It exchanges the authorization code, stores returned tokens in the encrypted local vault, and creates the LegalCode workspace connection record with `tokenVaultRef`.
 
 `POST /api/legalcode/workspace/tokens` encrypts and stores OAuth tokens in the local token vault and returns redacted token metadata plus a `tokenVaultRef`.
@@ -94,6 +96,8 @@ Sync:
 `POST /api/legalcode/workspace/artifacts` links a selected Drive, Docs, Sheets, OneDrive, SharePoint, Word, or Excel file to a LegalCode matter.
 
 `POST /api/legalcode/workspace/artifacts/import` is the preferred picker handoff endpoint. The desktop sends the selected provider file ID, connection ID, matter ID, app, and `tokenVaultRef`; LegalCode resolves the token locally, reads provider metadata, records the import operation, and then links the file as an external matter artifact. Google imports use Drive `files.get` metadata, including shared-drive support; Microsoft imports use Graph `driveItem` metadata from OneDrive or the selected SharePoint site.
+
+Provider file pickers or custom picker pages should be opened through `platform.legalcodeWorkspace.openPickerURL(url)`. The desktop validates known Google Drive, Microsoft 365, OneDrive, SharePoint, Office, or `legalcode://` callback URLs. Selected files should return as `legalcode://workspace/file-selected?provider=...&app=...&fileId=...` for Google files or `legalcode://workspace/file-selected?provider=...&app=...&itemId=...&siteID=...` for Microsoft Graph items.
 
 `GET /api/legalcode/workspace/artifacts` lists external workspace files linked to a matter.
 

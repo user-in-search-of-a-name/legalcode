@@ -19,6 +19,11 @@ type SaveFilePickerOptions = { title?: string; defaultPath?: string }
 type PlatformName = "web" | "desktop"
 type DesktopOS = "macos" | "windows" | "linux"
 
+type LegalCodeWorkspacePlatform = {
+  openAuthorizationURL(url: string): Promise<void>
+  openPickerURL(url: string): Promise<void>
+}
+
 export type FatalRendererErrorLog = {
   error: string
   url: string
@@ -102,6 +107,9 @@ type PlatformBase = {
 
   /** Read image from clipboard (desktop only) */
   readClipboardImage?(): Promise<File | null>
+
+  /** LegalCode Google Workspace / Microsoft 365 desktop bridge */
+  legalcodeWorkspace?: LegalCodeWorkspacePlatform
 
   /** Export collected diagnostic logs (desktop only) */
   exportDebugLogs?(): Promise<string>

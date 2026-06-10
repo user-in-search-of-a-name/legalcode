@@ -18,6 +18,8 @@ Expected qualities:
 - Mentions ETag/revision conflict checks and audit provenance.
 - Uses OAuth authorize and token exchange before read/write/edit execution.
 - Uses `connect/start` and `connect/finalize` for the desktop PKCE flow when possible.
+- Opens provider auth and picker URLs through the desktop LegalCode workspace bridge.
+- Handles `legalcode://workspace/oauth/callback` and `legalcode://workspace/file-selected` deep links.
 - Stores only a token-vault reference in the LegalCode connection record.
 - Uses encrypted token-vault execution instead of sending raw bearer tokens in normal workspace execution payloads.
 - Imports selected workspace files through the vault-backed artifact import endpoint before agents read them.

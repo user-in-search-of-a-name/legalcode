@@ -266,6 +266,11 @@ const createPlatform = (): Platform => {
         type: "image/png",
       })
     },
+
+    legalcodeWorkspace: {
+      openAuthorizationURL: (url: string) => window.api.legalcodeWorkspace.openAuthorizationURL(url),
+      openPickerURL: (url: string) => window.api.legalcodeWorkspace.openPickerURL(url),
+    },
   }
 }
 
