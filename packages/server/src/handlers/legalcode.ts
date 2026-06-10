@@ -1,7 +1,9 @@
 import type { LegalCode } from "@opencode-ai/core/legalcode"
+import { LegalCodeWorkspace } from "@opencode-ai/core/legalcode-workspace"
 import { Effect } from "effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { Api } from "../api"
+import { InvalidRequestError, ServiceUnavailableError } from "../errors"
 
 const agentRoles: LegalCode.AgentRole[] = [
   "case_strategist",
@@ -358,5 +360,35 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
           })),
         },
       }),
+    )
+    .handle("legalcode.workspace.oauth.authorize", (ctx) =>
+      Effect.succeed({
+        data: LegalCodeWorkspace.authorizationURL(ctx.payload),
+      }),
+    )
+    .handle("legalcode.workspace.oauth.token", (ctx) =>
+      Effect.tryPromise({
+        try: () => LegalCodeWorkspace.exchangeToken(ctx.payload),
+        catch: (error) => workspaceError(error, "Workspace token exchange failed"),
+      }).pipe(Effect.map((data) => ({ data }))),
+    )
+    .handle("legalcode.workspace.execute", (ctx) =>
+      Effect.tryPromise({
+        try: () => LegalCodeWorkspace.execute(ctx.payload),
+        catch: (error) => workspaceError(error, "Workspace operation failed"),
+      }).pipe(Effect.map((data) => ({ data }))),
     ),
 )
+
+function workspaceError(error: unknown, fallback: string) {
+  const message = error instanceof Error ? error.message : fallback
+  if (
+    message.startsWith("Unsupported") ||
+    message.includes("Workspace paths") ||
+    message.includes("approval") ||
+    message.includes("required")
+  ) {
+    return new InvalidRequestError({ message, kind: "legalcode_workspace" })
+  }
+  return new ServiceUnavailableError({ message, service: "legalcode_workspace" })
+}

@@ -402,3 +402,97 @@ export const WorkspaceOperationPlan = Schema.Struct({
   description: Schema.String,
 })
 export type WorkspaceOperationPlan = typeof WorkspaceOperationPlan.Type
+
+export const WorkspaceOAuthAuthorizeRequest = Schema.Struct({
+  provider: WorkspaceProvider,
+  clientID: Schema.String,
+  redirectURI: Schema.String,
+  scopes: Schema.Array(Schema.String).pipe(Schema.optional),
+  state: Schema.String,
+  codeChallenge: Schema.String.pipe(Schema.optional),
+  tenantID: Schema.String.pipe(Schema.optional),
+  prompt: Schema.String.pipe(Schema.optional),
+})
+export type WorkspaceOAuthAuthorizeRequest = typeof WorkspaceOAuthAuthorizeRequest.Type
+
+export const WorkspaceOAuthAuthorizeResponse = Schema.Struct({
+  provider: WorkspaceProvider,
+  authorizationURL: Schema.String,
+  scopes: Schema.Array(Schema.String),
+})
+export type WorkspaceOAuthAuthorizeResponse = typeof WorkspaceOAuthAuthorizeResponse.Type
+
+export const WorkspaceOAuthTokenRequest = Schema.Struct({
+  provider: WorkspaceProvider,
+  clientID: Schema.String,
+  redirectURI: Schema.String,
+  code: Schema.String,
+  codeVerifier: Schema.String.pipe(Schema.optional),
+  clientSecret: Schema.String.pipe(Schema.optional),
+  tenantID: Schema.String.pipe(Schema.optional),
+})
+export type WorkspaceOAuthTokenRequest = typeof WorkspaceOAuthTokenRequest.Type
+
+export const WorkspaceOAuthTokenResponse = Schema.Struct({
+  provider: WorkspaceProvider,
+  tokenType: Schema.String,
+  expiresIn: Schema.Number.pipe(Schema.optional),
+  scope: Schema.String.pipe(Schema.optional),
+  accessToken: Schema.String,
+  refreshToken: Schema.String.pipe(Schema.optional),
+  idToken: Schema.String.pipe(Schema.optional),
+})
+export type WorkspaceOAuthTokenResponse = typeof WorkspaceOAuthTokenResponse.Type
+
+export const WorkspaceExecuteRequest = Schema.Struct({
+  matterID: MatterID,
+  connectionID: WorkspaceConnectionID,
+  externalArtifactID: ExternalArtifactID.pipe(Schema.optional),
+  provider: WorkspaceProvider,
+  app: WorkspaceApp,
+  operation: WorkspaceOperationKind,
+  accessToken: Schema.String,
+  resourceID: Schema.String,
+  siteID: Schema.String.pipe(Schema.optional),
+  workspacePath: Schema.String.pipe(Schema.optional),
+  httpMethod: Schema.String.pipe(Schema.optional),
+  actor: Schema.String,
+  approval: HumanApprovalStatus,
+  inputSummary: Schema.String,
+  sourceSpans: Schema.Array(SourceSpan),
+  auditEventID: AuditEventID.pipe(Schema.optional),
+  expectedETag: Schema.String.pipe(Schema.optional),
+  expectedRevision: Schema.String.pipe(Schema.optional),
+  content: Schema.String.pipe(Schema.optional),
+  contentType: Schema.String.pipe(Schema.optional),
+  body: Schema.Unknown.pipe(Schema.optional),
+  dryRun: Schema.Boolean.pipe(Schema.optional),
+})
+export type WorkspaceExecuteRequest = typeof WorkspaceExecuteRequest.Type
+
+export const WorkspaceExecutePreparedRequest = Schema.Struct({
+  method: Schema.String,
+  url: Schema.String,
+  headers: Schema.Record(Schema.String, Schema.String),
+  bodyKind: Schema.Literals("none", "json", "text"),
+})
+export type WorkspaceExecutePreparedRequest = typeof WorkspaceExecutePreparedRequest.Type
+
+export const WorkspaceExecuteResult = Schema.Struct({
+  status: Schema.Number,
+  ok: Schema.Boolean,
+  etag: Schema.String.pipe(Schema.optional),
+  revision: Schema.String.pipe(Schema.optional),
+  contentType: Schema.String.pipe(Schema.optional),
+  json: Schema.Unknown.pipe(Schema.optional),
+  text: Schema.String.pipe(Schema.optional),
+})
+export type WorkspaceExecuteResult = typeof WorkspaceExecuteResult.Type
+
+export const WorkspaceExecuteResponse = Schema.Struct({
+  operation: WorkspaceOperation,
+  request: WorkspaceExecutePreparedRequest,
+  result: WorkspaceExecuteResult.pipe(Schema.optional),
+  blockedReasons: Schema.Array(Schema.String),
+})
+export type WorkspaceExecuteResponse = typeof WorkspaceExecuteResponse.Type

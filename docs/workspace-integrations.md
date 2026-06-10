@@ -71,7 +71,17 @@ Sync:
 - Risk controls.
 - Operation plans for Drive, Docs, Sheets, OneDrive, SharePoint, Word, and Excel.
 
-This endpoint is intentionally static in the foundation phase. The next implementation layer should add connection creation, OAuth callback/device flow handling, encrypted token storage, file picker handoff, and execution endpoints.
+`POST /api/legalcode/workspace/oauth/authorize` builds a provider authorization URL from a client ID, redirect URI, state, optional PKCE challenge, optional tenant ID, and optional scopes.
+
+`POST /api/legalcode/workspace/oauth/token` exchanges an authorization code for provider tokens. The response is intended for the desktop token vault; matter records should store only a `tokenVaultRef`.
+
+`POST /api/legalcode/workspace/execute` executes or dry-runs a matter-scoped operation after the desktop supplies an access token from the vault. It prepares and calls:
+- Google Drive metadata, Google Docs `batchUpdate`, and Google Sheets `batchUpdate`.
+- Microsoft Graph OneDrive/SharePoint item, Word content, and Excel workbook endpoints.
+
+Execution blocks write/edit/export/sync operations unless the request includes human approval, an audit event, and source spans. Dry-runs return the redacted HTTP request without touching the external workspace.
+
+The next implementation layer should add persisted connection creation, OAuth callback/device flow UI, encrypted token-vault storage, file picker handoff, and operation persistence into `legal_workspace_operation`.
 
 ## Acceptance Gates
 

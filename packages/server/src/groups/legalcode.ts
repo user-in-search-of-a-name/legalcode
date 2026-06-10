@@ -1,6 +1,7 @@
 import { LegalCode } from "@opencode-ai/core/legalcode"
 import { Schema } from "effect"
 import { HttpApiEndpoint, HttpApiGroup, OpenApi } from "effect/unstable/httpapi"
+import { InvalidRequestError, ServiceUnavailableError } from "../errors"
 
 export const LegalCodeCapabilities = Schema.Struct({
   primaryCustomer: Schema.Literal("us_solo_litigator"),
@@ -49,6 +50,47 @@ export const LegalCodeGroup = HttpApiGroup.make("server.legalcode")
         summary: "List workspace integrations",
         description:
           "Describe Google Workspace and Microsoft 365 read/write/edit capabilities, OAuth scopes, and legal reliability controls.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.post("legalcode.workspace.oauth.authorize", "/api/legalcode/workspace/oauth/authorize", {
+      payload: LegalCode.WorkspaceOAuthAuthorizeRequest,
+      success: Schema.Struct({ data: LegalCode.WorkspaceOAuthAuthorizeResponse }),
+      error: InvalidRequestError,
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.oauth.authorize",
+        summary: "Create workspace OAuth authorization URL",
+        description: "Build a Google Workspace or Microsoft 365 authorization URL for the desktop connection flow.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.post("legalcode.workspace.oauth.token", "/api/legalcode/workspace/oauth/token", {
+      payload: LegalCode.WorkspaceOAuthTokenRequest,
+      success: Schema.Struct({ data: LegalCode.WorkspaceOAuthTokenResponse }),
+      error: [InvalidRequestError, ServiceUnavailableError],
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.oauth.token",
+        summary: "Exchange workspace OAuth code",
+        description:
+          "Exchange an authorization code for Google Workspace or Microsoft 365 tokens. The desktop token vault should store returned secrets.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.post("legalcode.workspace.execute", "/api/legalcode/workspace/execute", {
+      payload: LegalCode.WorkspaceExecuteRequest,
+      success: Schema.Struct({ data: LegalCode.WorkspaceExecuteResponse }),
+      error: [InvalidRequestError, ServiceUnavailableError],
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.execute",
+        summary: "Execute workspace operation",
+        description:
+          "Execute or dry-run a matter-scoped Google Workspace or Microsoft 365 read/write/edit operation with approval and audit gates.",
       }),
     ),
   )

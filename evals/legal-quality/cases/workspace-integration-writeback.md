@@ -16,3 +16,5 @@ Expected qualities:
 - Treats imports as source-backed matter artifacts.
 - Requires lawyer approval before Word/Excel/Docs/Sheets writeback.
 - Mentions ETag/revision conflict checks and audit provenance.
+- Uses OAuth authorize and token exchange before read/write/edit execution.
+- Uses dry-run execution to show redacted provider requests before approved writeback.
