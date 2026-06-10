@@ -368,11 +368,68 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
         data: LegalCodeWorkspace.authorizationURL(ctx.payload),
       }),
     )
+    .handle("legalcode.workspace.connect.start", (ctx) =>
+      Effect.succeed({
+        data: LegalCodeWorkspace.startConnection(ctx.payload),
+      }),
+    )
     .handle("legalcode.workspace.oauth.token", (ctx) =>
       Effect.tryPromise({
         try: () => LegalCodeWorkspace.exchangeToken(ctx.payload),
         catch: (error) => workspaceError(error, "Workspace token exchange failed"),
       }).pipe(Effect.map((data) => ({ data }))),
+    )
+    .handle(
+      "legalcode.workspace.connect.finalize",
+      Effect.fn(function* (ctx) {
+        const token = yield* Effect.tryPromise({
+          try: () =>
+            LegalCodeWorkspace.exchangeToken({
+              provider: ctx.payload.provider,
+              clientID: ctx.payload.clientID,
+              redirectURI: ctx.payload.redirectURI,
+              code: ctx.payload.code,
+              codeVerifier: ctx.payload.codeVerifier,
+              clientSecret: ctx.payload.clientSecret,
+              tenantID: ctx.payload.tenantID,
+            }),
+          catch: (error) => workspaceError(error, "Workspace token exchange failed"),
+        })
+        const scopes = token.scope?.split(/\s+/).filter(Boolean) ?? LegalCodeWorkspace.defaultScopes(ctx.payload.provider)
+        const vault = yield* LegalCodeTokenVault.Service
+        const stored = yield* vault.store({
+          provider: ctx.payload.provider,
+          accountEmail: ctx.payload.accountEmail,
+          accountLabel: ctx.payload.accountLabel,
+          tenantID: ctx.payload.tenantID,
+          scopes,
+          tokenType: token.tokenType,
+          expiresIn: token.expiresIn,
+          accessToken: token.accessToken,
+          refreshToken: token.refreshToken,
+          idToken: token.idToken,
+        })
+        const store = yield* LegalCodeStore.Service
+        const connection = yield* store.createConnection({
+          matterID: ctx.payload.matterID,
+          provider: ctx.payload.provider,
+          accountEmail: ctx.payload.accountEmail,
+          accountLabel: ctx.payload.accountLabel,
+          tenantID: ctx.payload.tenantID,
+          domain: ctx.payload.domain,
+          status: "connected",
+          scopes,
+          readEnabled: true,
+          writeEnabled: true,
+          editEnabled: true,
+          tokenVaultRef: stored.ref,
+          metadata: {
+            authFlow: "oauth_pkce",
+            redirectURI: ctx.payload.redirectURI,
+          },
+        })
+        return { data: { provider: ctx.payload.provider, token: stored, connection } }
+      }),
     )
     .handle(
       "legalcode.workspace.token.store",

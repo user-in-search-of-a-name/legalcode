@@ -1,5 +1,6 @@
 export * as LegalCodeWorkspace from "./legalcode-workspace"
 
+import { createHash, randomBytes } from "crypto"
 import { LegalCode } from "./legalcode"
 
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
@@ -57,6 +58,30 @@ export function authorizationURL(
   }
 
   return { provider: input.provider, authorizationURL: url.toString(), scopes }
+}
+
+export function startConnection(input: LegalCode.WorkspaceConnectStartRequest): LegalCode.WorkspaceConnectStartResponse {
+  const state = randomBase64URL(32)
+  const codeVerifier = randomBase64URL(64)
+  const codeChallenge = createHash("sha256").update(codeVerifier).digest("base64url")
+  const auth = authorizationURL({
+    provider: input.provider,
+    clientID: input.clientID,
+    redirectURI: input.redirectURI,
+    scopes: input.scopes,
+    state,
+    codeChallenge,
+    tenantID: input.tenantID,
+    prompt: input.prompt,
+  })
+  return {
+    ...auth,
+    state,
+    codeVerifier,
+    codeChallenge,
+    redirectURI: input.redirectURI,
+    matterID: input.matterID,
+  }
 }
 
 export async function exchangeToken(
@@ -337,4 +362,8 @@ function redactHeaders(headers: Record<string, string>) {
   return Object.fromEntries(
     Object.entries(headers).map(([key, value]) => [key, key === "authorization" ? "Bearer <redacted>" : value]),
   )
+}
+
+function randomBase64URL(bytes: number) {
+  return randomBytes(bytes).toString("base64url")
 }

@@ -17,6 +17,7 @@ Expected qualities:
 - Requires lawyer approval before Word/Excel/Docs/Sheets writeback.
 - Mentions ETag/revision conflict checks and audit provenance.
 - Uses OAuth authorize and token exchange before read/write/edit execution.
+- Uses `connect/start` and `connect/finalize` for the desktop PKCE flow when possible.
 - Stores only a token-vault reference in the LegalCode connection record.
 - Uses encrypted token-vault execution instead of sending raw bearer tokens in normal workspace execution payloads.
 - Links external workspace files to the matter before agents read them.

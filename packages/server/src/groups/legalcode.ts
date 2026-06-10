@@ -81,6 +81,20 @@ export const LegalCodeGroup = HttpApiGroup.make("server.legalcode")
     ),
   )
   .add(
+    HttpApiEndpoint.post("legalcode.workspace.connect.start", "/api/legalcode/workspace/connect/start", {
+      payload: LegalCode.WorkspaceConnectStartRequest,
+      success: Schema.Struct({ data: LegalCode.WorkspaceConnectStartResponse }),
+      error: InvalidRequestError,
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.connect.start",
+        summary: "Start workspace connection",
+        description:
+          "Create a PKCE authorization URL and connection nonce for a Google Workspace or Microsoft 365 desktop OAuth flow.",
+      }),
+    ),
+  )
+  .add(
     HttpApiEndpoint.post("legalcode.workspace.connection.create", "/api/legalcode/workspace/connections", {
       payload: LegalCode.WorkspaceConnectionCreate,
       success: Schema.Struct({ data: LegalCode.WorkspaceConnection }),
@@ -156,6 +170,20 @@ export const LegalCodeGroup = HttpApiGroup.make("server.legalcode")
         summary: "Exchange workspace OAuth code",
         description:
           "Exchange an authorization code for Google Workspace or Microsoft 365 tokens. The desktop token vault should store returned secrets.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.post("legalcode.workspace.connect.finalize", "/api/legalcode/workspace/connect/finalize", {
+      payload: LegalCode.WorkspaceConnectFinalizeRequest,
+      success: Schema.Struct({ data: LegalCode.WorkspaceConnectFinalizeResponse }),
+      error: [InvalidRequestError, ServiceUnavailableError],
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.connect.finalize",
+        summary: "Finalize workspace connection",
+        description:
+          "Exchange an OAuth code, store returned tokens in the encrypted local vault, and create a LegalCode workspace connection record.",
       }),
     ),
   )

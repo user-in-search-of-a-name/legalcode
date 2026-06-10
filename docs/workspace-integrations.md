@@ -77,6 +77,10 @@ Sync:
 
 `POST /api/legalcode/workspace/oauth/token` exchanges an authorization code for provider tokens. The response is intended for the desktop token vault; matter records should store only a `tokenVaultRef`.
 
+`POST /api/legalcode/workspace/connect/start` is the preferred desktop start endpoint. It generates a PKCE `state`, `codeVerifier`, `codeChallenge`, authorization URL, scopes, and optional matter binding for Google Workspace or Microsoft 365.
+
+`POST /api/legalcode/workspace/connect/finalize` is the preferred desktop callback endpoint. It exchanges the authorization code, stores returned tokens in the encrypted local vault, and creates the LegalCode workspace connection record with `tokenVaultRef`.
+
 `POST /api/legalcode/workspace/tokens` encrypts and stores OAuth tokens in the local token vault and returns redacted token metadata plus a `tokenVaultRef`.
 
 `GET /api/legalcode/workspace/tokens` lists redacted token-vault metadata. It never returns access, refresh, or ID tokens.

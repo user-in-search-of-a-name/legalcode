@@ -425,6 +425,29 @@ export const WorkspaceOAuthAuthorizeResponse = Schema.Struct({
 })
 export type WorkspaceOAuthAuthorizeResponse = typeof WorkspaceOAuthAuthorizeResponse.Type
 
+export const WorkspaceConnectStartRequest = Schema.Struct({
+  provider: WorkspaceProvider,
+  clientID: Schema.String,
+  redirectURI: Schema.String,
+  matterID: MatterID.pipe(Schema.optional),
+  scopes: Schema.Array(Schema.String).pipe(Schema.optional),
+  tenantID: Schema.String.pipe(Schema.optional),
+  prompt: Schema.String.pipe(Schema.optional),
+})
+export type WorkspaceConnectStartRequest = typeof WorkspaceConnectStartRequest.Type
+
+export const WorkspaceConnectStartResponse = Schema.Struct({
+  provider: WorkspaceProvider,
+  authorizationURL: Schema.String,
+  scopes: Schema.Array(Schema.String),
+  state: Schema.String,
+  codeVerifier: Schema.String,
+  codeChallenge: Schema.String,
+  redirectURI: Schema.String,
+  matterID: MatterID.pipe(Schema.optional),
+})
+export type WorkspaceConnectStartResponse = typeof WorkspaceConnectStartResponse.Type
+
 export const WorkspaceOAuthTokenRequest = Schema.Struct({
   provider: WorkspaceProvider,
   clientID: Schema.String,
@@ -542,6 +565,28 @@ export const WorkspaceConnectionCreate = Schema.Struct({
   metadata: Schema.Record(Schema.String, Schema.Unknown),
 })
 export type WorkspaceConnectionCreate = typeof WorkspaceConnectionCreate.Type
+
+export const WorkspaceConnectFinalizeRequest = Schema.Struct({
+  provider: WorkspaceProvider,
+  clientID: Schema.String,
+  redirectURI: Schema.String,
+  code: Schema.String,
+  codeVerifier: Schema.String,
+  matterID: MatterID.pipe(Schema.optional),
+  accountEmail: Schema.String.pipe(Schema.optional),
+  accountLabel: Schema.String.pipe(Schema.optional),
+  tenantID: Schema.String.pipe(Schema.optional),
+  domain: Schema.String.pipe(Schema.optional),
+  clientSecret: Schema.String.pipe(Schema.optional),
+})
+export type WorkspaceConnectFinalizeRequest = typeof WorkspaceConnectFinalizeRequest.Type
+
+export const WorkspaceConnectFinalizeResponse = Schema.Struct({
+  provider: WorkspaceProvider,
+  token: WorkspaceTokenVaultInfo,
+  connection: WorkspaceConnection,
+})
+export type WorkspaceConnectFinalizeResponse = typeof WorkspaceConnectFinalizeResponse.Type
 
 export const ExternalArtifactLink = Schema.Struct({
   matterID: MatterID,
