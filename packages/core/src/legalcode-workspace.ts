@@ -191,6 +191,76 @@ export async function execute(input: LegalCode.WorkspaceExecuteRequest): Promise
   }
 }
 
+export async function importArtifactMetadata(
+  input: LegalCode.WorkspaceArtifactImportRequest & { accessToken: string },
+): Promise<LegalCode.WorkspaceExecuteResponse> {
+  validateImportApp(input.provider, input.app)
+  const app = metadataAppForImport(input.provider, input.app)
+  return execute({
+    matterID: input.matterID,
+    connectionID: input.connectionID,
+    provider: input.provider,
+    app,
+    operation: "import",
+    accessToken: input.accessToken,
+    resourceID: input.externalID,
+    siteID: input.siteID,
+    actor: input.actor,
+    approval: "not_required",
+    inputSummary: `Import metadata for ${input.provider} ${input.app} artifact ${input.externalID}.`,
+    sourceSpans: [],
+    dryRun: input.dryRun,
+  })
+}
+
+export function normalizeExternalArtifactMetadata(
+  input: LegalCode.WorkspaceArtifactImportRequest,
+  result: LegalCode.WorkspaceExecuteResult,
+): Omit<LegalCode.ExternalArtifactLink, "matterID" | "connectionID" | "provider" | "app" | "externalID"> {
+  const json = isRecord(result.json) ? result.json : {}
+  if (input.provider === "google_workspace") {
+    const revision = stringField(json, "version") ?? stringField(json, "modifiedTime")
+    return {
+      title: stringField(json, "name") ?? input.externalID,
+      mimeType: stringField(json, "mimeType"),
+      webURL: stringField(json, "webViewLink"),
+      syncDirection: input.syncDirection ?? "import_only",
+      syncStatus: "imported",
+      etag: result.etag ?? stringField(json, "md5Checksum"),
+      revision,
+      humanApproval: input.humanApproval ?? "not_required",
+      metadata: cleanRecord({
+        ...(input.metadata ?? {}),
+        providerMetadata: json,
+        providerModifiedTime: stringField(json, "modifiedTime"),
+        providerRevision: revision,
+        importedVia: "workspace_artifact_import",
+      }),
+    }
+  }
+
+  const file = isRecord(json.file) ? json.file : {}
+  const revision = result.revision ?? stringField(json, "cTag") ?? stringField(json, "lastModifiedDateTime")
+  return {
+    title: stringField(json, "name") ?? input.externalID,
+    mimeType: stringField(file, "mimeType"),
+    webURL: stringField(json, "webUrl"),
+    syncDirection: input.syncDirection ?? "import_only",
+    syncStatus: "imported",
+    etag: result.etag ?? stringField(json, "eTag"),
+    revision,
+    humanApproval: input.humanApproval ?? "not_required",
+    metadata: cleanRecord({
+      ...(input.metadata ?? {}),
+      providerMetadata: json,
+      providerModifiedTime: stringField(json, "lastModifiedDateTime"),
+      providerRevision: revision,
+      driveID: stringField(isRecord(json.parentReference) ? json.parentReference : {}, "driveId"),
+      importedVia: "workspace_artifact_import",
+    }),
+  }
+}
+
 function validateExecution(input: LegalCode.WorkspaceExecuteRequest) {
   const reasons: string[] = []
   if (writeOperations.has(input.operation) && input.approval !== "approved") {
@@ -247,7 +317,7 @@ function prepareGoogleRequest(
     if (input.operation === "read" || input.operation === "import" || input.operation === "sync") {
       return {
         method: "GET",
-        url: `https://www.googleapis.com/drive/v3/files/${file}?fields=${fields}`,
+        url: `https://www.googleapis.com/drive/v3/files/${file}?fields=${fields}&supportsAllDrives=true`,
         headers,
         body,
         bodyKind,
@@ -362,6 +432,39 @@ function redactHeaders(headers: Record<string, string>) {
   return Object.fromEntries(
     Object.entries(headers).map(([key, value]) => [key, key === "authorization" ? "Bearer <redacted>" : value]),
   )
+}
+
+function metadataAppForImport(
+  provider: LegalCode.WorkspaceProvider,
+  app: LegalCode.WorkspaceApp,
+): LegalCode.WorkspaceApp {
+  if (provider === "google_workspace") return "google_drive"
+  if (app === "sharepoint") return "sharepoint"
+  return "one_drive"
+}
+
+function validateImportApp(provider: LegalCode.WorkspaceProvider, app: LegalCode.WorkspaceApp) {
+  const googleApps = new Set<LegalCode.WorkspaceApp>(["google_drive", "google_docs", "google_sheets"])
+  const microsoftApps = new Set<LegalCode.WorkspaceApp>(["one_drive", "sharepoint", "word", "excel"])
+  if (provider === "google_workspace" && !googleApps.has(app)) {
+    throw new Error(`Unsupported Google Workspace artifact app: ${app}`)
+  }
+  if (provider === "microsoft_365" && !microsoftApps.has(app)) {
+    throw new Error(`Unsupported Microsoft 365 artifact app: ${app}`)
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function stringField(record: Record<string, unknown>, key: string) {
+  const value = record[key]
+  return typeof value === "string" && value.length > 0 ? value : undefined
+}
+
+function cleanRecord(record: Record<string, unknown>) {
+  return Object.fromEntries(Object.entries(record).filter(([, value]) => value !== undefined))
 }
 
 function randomBase64URL(bytes: number) {

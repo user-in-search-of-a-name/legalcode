@@ -93,6 +93,8 @@ Sync:
 
 `POST /api/legalcode/workspace/artifacts` links a selected Drive, Docs, Sheets, OneDrive, SharePoint, Word, or Excel file to a LegalCode matter.
 
+`POST /api/legalcode/workspace/artifacts/import` is the preferred picker handoff endpoint. The desktop sends the selected provider file ID, connection ID, matter ID, app, and `tokenVaultRef`; LegalCode resolves the token locally, reads provider metadata, records the import operation, and then links the file as an external matter artifact. Google imports use Drive `files.get` metadata, including shared-drive support; Microsoft imports use Graph `driveItem` metadata from OneDrive or the selected SharePoint site.
+
 `GET /api/legalcode/workspace/artifacts` lists external workspace files linked to a matter.
 
 `POST /api/legalcode/workspace/execute` executes or dry-runs a matter-scoped operation after the desktop supplies an access token from the vault. It prepares and calls:
@@ -110,7 +112,7 @@ The next implementation layer should add OAuth callback/device flow UI, file pic
 ## Acceptance Gates
 
 - No workspace write/edit/export/sync operation runs without `humanApproval: approved`.
-- No agent reads workspace content unless the external artifact is linked to the selected matter.
+- No agent reads workspace content unless the external artifact is imported or linked to the selected matter.
 - No broad provider scope is requested when a narrower provider-supported scope satisfies the requested operation.
 - No imported quote or factual claim is presented as verified unless it has source spans.
 - No workspace operation is considered complete unless it has an audit event.
@@ -119,4 +121,6 @@ The next implementation layer should add OAuth callback/device flow UI, file pic
 ## Provider References
 
 - Google OAuth scopes: https://developers.google.com/identity/protocols/oauth2/scopes
+- Google Drive `files.get`: https://developers.google.com/workspace/drive/api/reference/rest/v3/files/get
 - Microsoft Graph permissions: https://learn.microsoft.com/en-us/graph/permissions-reference
+- Microsoft Graph `driveItem` metadata: https://learn.microsoft.com/en-us/graph/api/driveitem-get

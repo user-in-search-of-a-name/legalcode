@@ -549,6 +549,32 @@ export const WorkspaceExecuteResponse = Schema.Struct({
 })
 export type WorkspaceExecuteResponse = typeof WorkspaceExecuteResponse.Type
 
+export const WorkspaceArtifactImportRequest = Schema.Struct({
+  matterID: MatterID,
+  connectionID: WorkspaceConnectionID,
+  provider: WorkspaceProvider,
+  app: WorkspaceApp,
+  tokenVaultRef: WorkspaceTokenVaultRef,
+  externalID: Schema.String,
+  siteID: Schema.String.pipe(Schema.optional),
+  actor: Schema.String,
+  syncDirection: WorkspaceSyncDirection.pipe(Schema.optional),
+  humanApproval: HumanApprovalStatus.pipe(Schema.optional),
+  metadata: Schema.Record(Schema.String, Schema.Unknown).pipe(Schema.optional),
+  dryRun: Schema.Boolean.pipe(Schema.optional),
+})
+export type WorkspaceArtifactImportRequest = typeof WorkspaceArtifactImportRequest.Type
+
+export const WorkspaceArtifactImportResponse = Schema.Struct({
+  artifact: ExternalArtifact.pipe(Schema.optional),
+  operation: WorkspaceOperation,
+  request: WorkspaceExecutePreparedRequest,
+  result: WorkspaceExecuteResult.pipe(Schema.optional),
+  metadata: Schema.Record(Schema.String, Schema.Unknown),
+  blockedReasons: Schema.Array(Schema.String),
+})
+export type WorkspaceArtifactImportResponse = typeof WorkspaceArtifactImportResponse.Type
+
 export const WorkspaceConnectionCreate = Schema.Struct({
   matterID: MatterID.pipe(Schema.optional),
   provider: WorkspaceProvider,

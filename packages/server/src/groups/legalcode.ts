@@ -134,6 +134,20 @@ export const LegalCodeGroup = HttpApiGroup.make("server.legalcode")
     ),
   )
   .add(
+    HttpApiEndpoint.post("legalcode.workspace.artifact.import", "/api/legalcode/workspace/artifacts/import", {
+      payload: LegalCode.WorkspaceArtifactImportRequest,
+      success: Schema.Struct({ data: LegalCode.WorkspaceArtifactImportResponse }),
+      error: [InvalidRequestError, ServiceUnavailableError],
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace.artifact.import",
+        summary: "Import selected workspace artifact",
+        description:
+          "Resolve provider metadata through the local token vault, record the import operation, and bind the selected file to a LegalCode matter.",
+      }),
+    ),
+  )
+  .add(
     HttpApiEndpoint.get("legalcode.workspace.artifact.list", "/api/legalcode/workspace/artifacts", {
       query: WorkspaceMatterProviderQuery,
       success: Schema.Struct({ data: Schema.Array(LegalCode.ExternalArtifact) }),

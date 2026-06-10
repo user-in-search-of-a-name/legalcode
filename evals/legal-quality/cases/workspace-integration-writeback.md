@@ -20,6 +20,7 @@ Expected qualities:
 - Uses `connect/start` and `connect/finalize` for the desktop PKCE flow when possible.
 - Stores only a token-vault reference in the LegalCode connection record.
 - Uses encrypted token-vault execution instead of sending raw bearer tokens in normal workspace execution payloads.
-- Links external workspace files to the matter before agents read them.
+- Imports selected workspace files through the vault-backed artifact import endpoint before agents read them.
+- Links external workspace files to the matter only after provider metadata resolves.
 - Uses dry-run execution to show redacted provider requests before approved writeback.
 - Records each prepared or executed operation in the matter operation history.

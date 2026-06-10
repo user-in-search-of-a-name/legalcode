@@ -475,6 +475,76 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
       }),
     )
     .handle(
+      "legalcode.workspace.artifact.import",
+      Effect.fn(function* (ctx) {
+        const vault = yield* LegalCodeTokenVault.Service
+        const token = yield* vault.get(ctx.payload.tokenVaultRef)
+        if (!token) {
+          return yield* Effect.fail(
+            new InvalidRequestError({
+              message: `Token vault reference not found: ${ctx.payload.tokenVaultRef}`,
+              kind: "legalcode_workspace",
+              field: "tokenVaultRef",
+            }),
+          )
+        }
+        if (token.provider !== ctx.payload.provider) {
+          return yield* Effect.fail(
+            new InvalidRequestError({
+              message: `Token vault provider ${token.provider} does not match requested provider ${ctx.payload.provider}`,
+              kind: "legalcode_workspace",
+              field: "provider",
+            }),
+          )
+        }
+
+        const data = yield* Effect.tryPromise({
+          try: () =>
+            LegalCodeWorkspace.importArtifactMetadata({
+              ...ctx.payload,
+              accessToken: token.accessToken,
+            }),
+          catch: (error) => workspaceError(error, "Workspace artifact import failed"),
+        })
+        const store = yield* LegalCodeStore.Service
+        yield* store.recordOperation({ operation: data.operation, result: data.result })
+
+        if (data.blockedReasons.length > 0 || ctx.payload.dryRun || !data.result?.ok) {
+          return {
+            data: {
+              operation: data.operation,
+              request: data.request,
+              result: data.result,
+              metadata: {
+                importStatus: data.blockedReasons.length > 0 ? "blocked" : ctx.payload.dryRun ? "planned" : "failed",
+              },
+              blockedReasons: data.blockedReasons,
+            },
+          }
+        }
+
+        const artifactMetadata = LegalCodeWorkspace.normalizeExternalArtifactMetadata(ctx.payload, data.result)
+        const artifact = yield* store.linkExternalArtifact({
+          matterID: ctx.payload.matterID,
+          connectionID: ctx.payload.connectionID,
+          provider: ctx.payload.provider,
+          app: ctx.payload.app,
+          externalID: ctx.payload.externalID,
+          ...artifactMetadata,
+        })
+        return {
+          data: {
+            artifact,
+            operation: data.operation,
+            request: data.request,
+            result: data.result,
+            metadata: artifact.metadata,
+            blockedReasons: data.blockedReasons,
+          },
+        }
+      }),
+    )
+    .handle(
       "legalcode.workspace.artifact.list",
       Effect.fn(function* (ctx) {
         const store = yield* LegalCodeStore.Service

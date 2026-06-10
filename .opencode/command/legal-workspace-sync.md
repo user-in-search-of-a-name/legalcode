@@ -16,6 +16,7 @@ Inputs to request or infer:
 Required checks:
 - Confirm the operation is matter-scoped and does not grant broad workspace access when a narrower scope is available.
 - List OAuth scopes and mark any scope that may require admin consent.
+- For selected cloud files, prefer `/api/legalcode/workspace/artifacts/import` so provider metadata is resolved through the local token vault before linking.
 - For reads/imports, identify what source spans or extracted text should become LegalCode sources.
 - For writes/edits/exports/sync, require explicit human approval and an audit event before execution.
 - Flag conflicts, privilege risks, overwrites, missing source anchors, missing approval, and missing audit provenance.
