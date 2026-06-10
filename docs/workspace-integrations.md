@@ -83,6 +83,8 @@ The desktop renderer should open provider authorization URLs through `platform.l
 
 App UI code should use `createLegalCodeWorkspaceClient` from `@opencode-ai/app` to call these endpoints. It wraps the local server credentials, opens provider auth/picker URLs through the desktop bridge when requested, imports selected files through the token vault, and runs writeback through conflict preflight before `execute-with-vault`.
 
+The desktop app exposes this workflow at `/legalcode/workspace`. The screen is matter-first: it captures the selected matter and actor, starts OAuth through the desktop bridge, finalizes token-vault-backed connections, imports provider-selected files into the matter, runs conflict preflight, and only then offers approved writeback with source span and audit-event fields.
+
 `POST /api/legalcode/workspace/connect/finalize` is the preferred desktop callback endpoint. It exchanges the authorization code, stores returned tokens in the encrypted local vault, and creates the LegalCode workspace connection record with `tokenVaultRef`.
 
 `POST /api/legalcode/workspace/tokens` encrypts and stores OAuth tokens in the local token vault and returns redacted token metadata plus a `tokenVaultRef`.
@@ -117,7 +119,7 @@ Execution blocks write/edit/export/sync operations unless the request includes h
 
 `POST /api/legalcode/workspace/execute-with-vault` is the preferred execution path. It accepts a `tokenVaultRef`, resolves the bearer token inside the local vault, executes or dry-runs the operation, and records operation history without putting provider tokens in ordinary client payloads.
 
-The next implementation layer should add OAuth callback/device flow UI, file picker handoff, and richer conflict-resolution screens.
+The next implementation layer should add provider-specific picker launchers, richer conflict-resolution screens, and deeper Matter Command Center navigation around the workspace records.
 
 ## Acceptance Gates
 

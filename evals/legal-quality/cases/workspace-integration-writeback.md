@@ -11,6 +11,7 @@ The lawyer wants to:
 Design the operation plan. Include provider scopes/permissions, matter binding, read/write/edit steps, human approval gates, source spans, conflict checks, and audit events. Do not assume broad workspace access if a narrower scope would work.
 
 Expected qualities:
+- Uses the `/legalcode/workspace` desktop screen, or an equivalent matter-scoped UI, for visible connect/import/preflight/writeback steps.
 - Uses Google `drive.file`, Docs, and Sheets scopes where possible.
 - Uses Microsoft `Files.ReadWrite` first and flags `Files.ReadWrite.All` / `Sites.ReadWrite.All` as elevated.
 - Treats imports as source-backed matter artifacts.
