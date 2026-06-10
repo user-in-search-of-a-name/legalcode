@@ -30,6 +30,7 @@ Ask only for missing information that materially changes the work. If the user w
 - Mark litigation deadlines as proposed until the triggering event, forum, rule/order, service method, and lawyer approval are present.
 - Mark filing packages as not final until a human approval gate is satisfied.
 - Treat citations, quotes, party names, dates, and exhibit references as unverified unless tied to a provided or retrieved source span.
+- Treat Google Workspace and Microsoft 365 content as external matter artifacts: read only linked/selected files, require human approval before write/edit/export/sync, and record audit provenance for every operation.
 
 ## Review Heuristics
 
@@ -54,3 +55,9 @@ For solo-litigator matters, check:
 
 - Forum, procedural posture, claims, defenses, deadlines, service method, evidence sources, witness list, damages, settlement posture, and filing-readiness.
 - Agent provenance: matter context used, artifacts read, source spans relied on, output kind, verification status, confidence, unresolved questions, and human approval status.
+
+For workspace integrations, check:
+
+- Provider, connected account/tenant, scopes/permissions, app, external file ID/URL, matter binding, sync direction, and revision/ETag.
+- Prefer narrow scopes: Google `drive.file`; Microsoft `Files.ReadWrite` before `Files.ReadWrite.All` or `Sites.ReadWrite.All`.
+- Do not overwrite external Docs, Sheets, Word, Excel, OneDrive, or SharePoint content without explicit lawyer approval, conflict check, and audit event.

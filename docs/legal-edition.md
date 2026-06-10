@@ -43,6 +43,7 @@ Use Codex as the quality bar:
 - `.opencode/command/legal-matter-brief.md` adds a matter briefing workflow.
 - `evals/legal-quality/README.md` defines the initial quality rubric and seed benchmark cases.
 - `docs/desktop-collaboration.md` defines the standalone desktop and Google Docs/Sheets-style team collaboration architecture.
+- `docs/workspace-integrations.md` defines matter-scoped Google Workspace and Microsoft 365 read/write/edit integration rules.
 - `jurisdictions/us-litigation.json` starts the active US litigation jurisdiction pack.
 - `jurisdictions/india-litigation.json` starts the planned India litigation jurisdiction pack.
 
@@ -59,6 +60,7 @@ Use Codex as the quality bar:
 2. Add a benchmark runner that scores source fidelity, issue spotting, drafting quality, uncertainty handling, and confidentiality behavior.
 3. Add document ingestion helpers for `.docx`, `.pdf`, and structured clause extraction.
 4. Add optional integrations for matter management, DMS, e-signature, and legal research providers.
-5. Build a legal-first UI profile that emphasizes documents, issue lists, citations, redlines, and approval workflow.
-6. Add matter workspaces, legal documents, legal sheets, team presence, comments, permissions, and audit-backed collaboration.
-7. Wire the LegalCode core domain into desktop matter views, local SQLite services, and API routes.
+5. Implement OAuth/device-flow connection setup and encrypted token-vault storage for Google Workspace and Microsoft 365.
+6. Build a legal-first UI profile that emphasizes documents, issue lists, citations, redlines, and approval workflow.
+7. Add matter workspaces, legal documents, legal sheets, team presence, comments, permissions, and audit-backed collaboration.
+8. Wire the LegalCode core domain into desktop matter views, local SQLite services, and API routes.

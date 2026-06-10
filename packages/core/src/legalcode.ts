@@ -44,6 +44,15 @@ export type AuditEventID = typeof AuditEventID.Type
 export const AgentActionID = makeID("act", "LegalCode.AgentActionID")
 export type AgentActionID = typeof AgentActionID.Type
 
+export const WorkspaceConnectionID = makeID("wcn", "LegalCode.WorkspaceConnectionID")
+export type WorkspaceConnectionID = typeof WorkspaceConnectionID.Type
+
+export const ExternalArtifactID = makeID("xar", "LegalCode.ExternalArtifactID")
+export type ExternalArtifactID = typeof ExternalArtifactID.Type
+
+export const WorkspaceOperationID = makeID("wop", "LegalCode.WorkspaceOperationID")
+export type WorkspaceOperationID = typeof WorkspaceOperationID.Type
+
 export const Jurisdiction = Schema.Literals("us", "india", "other")
 export type Jurisdiction = typeof Jurisdiction.Type
 
@@ -94,6 +103,7 @@ export const AgentRole = Schema.Literals(
   "evidence_chronologist",
   "settlement_analyst",
   "filing_assistant",
+  "workspace_integrator",
 )
 export type AgentRole = typeof AgentRole.Type
 
@@ -102,6 +112,54 @@ export type AgentOutputKind = typeof AgentOutputKind.Type
 
 export const HumanApprovalStatus = Schema.Literals("not_required", "required", "approved", "rejected")
 export type HumanApprovalStatus = typeof HumanApprovalStatus.Type
+
+export const WorkspaceProvider = Schema.Literals("google_workspace", "microsoft_365")
+export type WorkspaceProvider = typeof WorkspaceProvider.Type
+
+export const WorkspaceApp = Schema.Literals(
+  "google_drive",
+  "google_docs",
+  "google_sheets",
+  "one_drive",
+  "sharepoint",
+  "word",
+  "excel",
+)
+export type WorkspaceApp = typeof WorkspaceApp.Type
+
+export const WorkspaceOperationKind = Schema.Literals(
+  "read",
+  "write",
+  "edit",
+  "comment",
+  "suggest",
+  "import",
+  "export",
+  "sync",
+)
+export type WorkspaceOperationKind = typeof WorkspaceOperationKind.Type
+
+export const WorkspaceConnectionStatus = Schema.Literals(
+  "not_configured",
+  "needs_auth",
+  "connected",
+  "paused",
+  "revoked",
+  "error",
+)
+export type WorkspaceConnectionStatus = typeof WorkspaceConnectionStatus.Type
+
+export const WorkspaceSyncStatus = Schema.Literals("not_synced", "imported", "exported", "linked", "conflict", "error")
+export type WorkspaceSyncStatus = typeof WorkspaceSyncStatus.Type
+
+export const WorkspaceSyncDirection = Schema.Literals(
+  "import_only",
+  "export_only",
+  "two_way",
+  "legalcode_authoritative",
+  "workspace_authoritative",
+)
+export type WorkspaceSyncDirection = typeof WorkspaceSyncDirection.Type
 
 export const SourceSpan = Schema.Struct({
   sourceID: SourceID,
@@ -245,3 +303,102 @@ export const JurisdictionPack = Schema.Struct({
   researchSourcePreferences: Schema.Array(Schema.String),
 })
 export type JurisdictionPack = typeof JurisdictionPack.Type
+
+export const WorkspaceScope = Schema.Struct({
+  provider: WorkspaceProvider,
+  scope: Schema.String,
+  purpose: Schema.String,
+  requiredFor: Schema.Array(WorkspaceOperationKind),
+  sensitive: Schema.Boolean,
+  adminConsentLikely: Schema.Boolean,
+})
+export type WorkspaceScope = typeof WorkspaceScope.Type
+
+export const WorkspaceIntegrationProfile = Schema.Struct({
+  provider: WorkspaceProvider,
+  label: Schema.String,
+  status: Schema.Literals("planned", "available"),
+  apps: Schema.Array(WorkspaceApp),
+  authType: Schema.Literals("oauth_device_or_browser", "admin_consent_oauth"),
+  readOperations: Schema.Array(WorkspaceOperationKind),
+  writeOperations: Schema.Array(WorkspaceOperationKind),
+  editOperations: Schema.Array(WorkspaceOperationKind),
+  defaultScopes: Schema.Array(WorkspaceScope),
+  riskControls: Schema.Array(Schema.String),
+})
+export type WorkspaceIntegrationProfile = typeof WorkspaceIntegrationProfile.Type
+
+export const WorkspaceConnection = Schema.Struct({
+  id: WorkspaceConnectionID,
+  matterID: MatterID.pipe(Schema.optional),
+  provider: WorkspaceProvider,
+  accountEmail: Schema.String.pipe(Schema.optional),
+  accountLabel: Schema.String.pipe(Schema.optional),
+  tenantID: Schema.String.pipe(Schema.optional),
+  domain: Schema.String.pipe(Schema.optional),
+  status: WorkspaceConnectionStatus,
+  scopes: Schema.Array(Schema.String),
+  readEnabled: Schema.Boolean,
+  writeEnabled: Schema.Boolean,
+  editEnabled: Schema.Boolean,
+  tokenVaultRef: Schema.String.pipe(Schema.optional),
+  lastSyncAt: Schema.String.pipe(Schema.optional),
+  metadata: Schema.Record(Schema.String, Schema.Unknown),
+})
+export type WorkspaceConnection = typeof WorkspaceConnection.Type
+
+export const ExternalArtifact = Schema.Struct({
+  id: ExternalArtifactID,
+  matterID: MatterID,
+  connectionID: WorkspaceConnectionID,
+  provider: WorkspaceProvider,
+  app: WorkspaceApp,
+  externalID: Schema.String,
+  title: Schema.String,
+  mimeType: Schema.String.pipe(Schema.optional),
+  webURL: Schema.String.pipe(Schema.optional),
+  localArtifactID: ArtifactID.pipe(Schema.optional),
+  sourceID: SourceID.pipe(Schema.optional),
+  syncDirection: WorkspaceSyncDirection,
+  syncStatus: WorkspaceSyncStatus,
+  etag: Schema.String.pipe(Schema.optional),
+  revision: Schema.String.pipe(Schema.optional),
+  lastReadAt: Schema.String.pipe(Schema.optional),
+  lastWriteAt: Schema.String.pipe(Schema.optional),
+  humanApproval: HumanApprovalStatus,
+  metadata: Schema.Record(Schema.String, Schema.Unknown),
+})
+export type ExternalArtifact = typeof ExternalArtifact.Type
+
+export const WorkspaceOperation = Schema.Struct({
+  id: WorkspaceOperationID,
+  matterID: MatterID,
+  connectionID: WorkspaceConnectionID,
+  externalArtifactID: ExternalArtifactID.pipe(Schema.optional),
+  provider: WorkspaceProvider,
+  app: WorkspaceApp,
+  operation: WorkspaceOperationKind,
+  actor: Schema.String,
+  status: Schema.Literals("planned", "approved", "running", "succeeded", "failed", "cancelled"),
+  approval: HumanApprovalStatus,
+  inputSummary: Schema.String,
+  outputSummary: Schema.String.pipe(Schema.optional),
+  sourceSpans: Schema.Array(SourceSpan),
+  auditEventID: AuditEventID.pipe(Schema.optional),
+  metadata: Schema.Record(Schema.String, Schema.Unknown),
+})
+export type WorkspaceOperation = typeof WorkspaceOperation.Type
+
+export const WorkspaceOperationPlan = Schema.Struct({
+  provider: WorkspaceProvider,
+  app: WorkspaceApp,
+  operation: WorkspaceOperationKind,
+  method: Schema.String,
+  endpointTemplate: Schema.String,
+  requiredScopes: Schema.Array(Schema.String),
+  approvalRequired: Schema.Boolean,
+  auditEventRequired: Schema.Boolean,
+  sourceSpanRequired: Schema.Boolean,
+  description: Schema.String,
+})
+export type WorkspaceOperationPlan = typeof WorkspaceOperationPlan.Type

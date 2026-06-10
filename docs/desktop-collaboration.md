@@ -4,13 +4,14 @@ LegalCode should become a standalone desktop app for legal teams, not only a bra
 
 ## Product Shape
 
-LegalCode Desktop has four primary surfaces:
+LegalCode Desktop has six primary surfaces:
 
 - **Matter workspace:** A shared container for clients, projects, disputes, deals, or compliance initiatives.
 - **Legal documents:** Rich-text documents for contracts, memos, policies, briefs, playbooks, and research notes.
 - **Legal sheets:** Structured tables for obligation trackers, diligence lists, clause matrices, issue logs, privilege logs, and compliance controls.
 - **Agent panel:** LegalCode agents that can read selected matter context, draft into documents, populate sheets, summarize threads, and propose edits.
 - **Trust dashboard:** Citation, quote, deadline, source-span, and human-approval status across the matter.
+- **Workspace connectors:** Matter-scoped Google Workspace and Microsoft 365 links for selected Drive, Docs, Sheets, OneDrive, SharePoint, Word, and Excel artifacts.
 
 The app should support offline-first local work and online team collaboration. Desktop remains the primary professional surface; web access can follow as a companion for review and comments.
 
@@ -112,6 +113,16 @@ Recommended slices:
 
 Keep chat/session sharing separate from legal artifact sharing. LegalCode should not reuse public session-share semantics for confidential matter collaboration.
 
+## External Workspace Editing
+
+Google Workspace and Microsoft 365 integrations should be optional, matter-scoped, and approval-gated:
+
+- Reads/imports can happen after a user selects or links external files to a matter.
+- Writes/edits/exports/syncs require explicit human approval, an audit event, and conflict checks against external revision metadata.
+- Google Workspace should prefer `drive.file` plus Docs/Sheets scopes over full-drive access.
+- Microsoft 365 should prefer OneDrive `Files.ReadWrite`; SharePoint or tenant-wide permissions should be elevated/admin-reviewed.
+- Agents may propose comments, suggestions, or document/table edits, but they do not silently overwrite external workspace content.
+
 ## MVP Sequence
 
 1. Rebrand desktop shell and app identity to LegalCode.
@@ -121,9 +132,10 @@ Keep chat/session sharing separate from legal artifact sharing. LegalCode should
 5. Add sheet artifact view for issue lists, evidence chronologies, discovery trackers, deadlines, damages tables, and privilege logs.
 6. Add agent provenance and suggested-edits workflow.
 7. Add real-time presence and comment sync.
-8. Add CRDT co-editing for legal documents.
-9. Add CRDT co-editing for legal sheets.
-10. Add team roles, invites, artifact-level permissions, export, audit log, and retention controls.
+8. Add Google Workspace and Microsoft 365 connection setup, file linking, import/export, and approval-gated writeback.
+9. Add CRDT co-editing for legal documents.
+10. Add CRDT co-editing for legal sheets.
+11. Add team roles, invites, artifact-level permissions, export, audit log, and retention controls.
 
 ## Non-Negotiables
 
@@ -133,3 +145,4 @@ Keep chat/session sharing separate from legal artifact sharing. LegalCode should
 - Legal sources and document excerpts remain traceable.
 - Offline edits must reconcile without silent data loss.
 - Final/exported versions must be reproducible from durable snapshots.
+- External workspace edits must be approved, audit-backed, and conflict-checked before writeback.

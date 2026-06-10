@@ -207,3 +207,109 @@ export const LegalAgentActionTable = sqliteTable(
     index("legal_agent_action_matter_output_idx").on(table.matter_id, table.output_kind),
   ],
 )
+
+export const LegalWorkspaceConnectionTable = sqliteTable(
+  "legal_workspace_connection",
+  {
+    id: text().$type<LegalCode.WorkspaceConnectionID>().primaryKey(),
+    matter_id: text()
+      .$type<LegalCode.MatterID>()
+      .references(() => LegalMatterTable.id, { onDelete: "cascade" }),
+    provider: text().$type<LegalCode.WorkspaceProvider>().notNull(),
+    account_email: text(),
+    account_label: text(),
+    tenant_id: text(),
+    domain: text(),
+    status: text().$type<LegalCode.WorkspaceConnectionStatus>().notNull(),
+    scopes: text({ mode: "json" }).notNull().$type<string[]>(),
+    read_enabled: integer({ mode: "boolean" }).notNull().default(false),
+    write_enabled: integer({ mode: "boolean" }).notNull().default(false),
+    edit_enabled: integer({ mode: "boolean" }).notNull().default(false),
+    token_vault_ref: text(),
+    last_sync_at: text(),
+    metadata: text({ mode: "json" }).notNull().$type<Record<string, unknown>>(),
+    ...Timestamps,
+  },
+  (table) => [
+    index("legal_workspace_connection_matter_provider_idx").on(table.matter_id, table.provider),
+    index("legal_workspace_connection_status_idx").on(table.status),
+  ],
+)
+
+export const LegalExternalArtifactTable = sqliteTable(
+  "legal_external_artifact",
+  {
+    id: text().$type<LegalCode.ExternalArtifactID>().primaryKey(),
+    matter_id: text()
+      .$type<LegalCode.MatterID>()
+      .notNull()
+      .references(() => LegalMatterTable.id, { onDelete: "cascade" }),
+    connection_id: text()
+      .$type<LegalCode.WorkspaceConnectionID>()
+      .notNull()
+      .references(() => LegalWorkspaceConnectionTable.id, { onDelete: "cascade" }),
+    provider: text().$type<LegalCode.WorkspaceProvider>().notNull(),
+    app: text().$type<LegalCode.WorkspaceApp>().notNull(),
+    external_id: text().notNull(),
+    title: text().notNull(),
+    mime_type: text(),
+    web_url: text(),
+    local_artifact_id: text()
+      .$type<LegalCode.ArtifactID>()
+      .references(() => LegalArtifactTable.id, { onDelete: "set null" }),
+    source_id: text()
+      .$type<LegalCode.SourceID>()
+      .references(() => LegalSourceTable.id, { onDelete: "set null" }),
+    sync_direction: text().$type<LegalCode.WorkspaceSyncDirection>().notNull(),
+    sync_status: text().$type<LegalCode.WorkspaceSyncStatus>().notNull(),
+    etag: text(),
+    revision: text(),
+    last_read_at: text(),
+    last_write_at: text(),
+    human_approval: text().$type<LegalCode.HumanApprovalStatus>().notNull(),
+    metadata: text({ mode: "json" }).notNull().$type<Record<string, unknown>>(),
+    ...Timestamps,
+  },
+  (table) => [
+    index("legal_external_artifact_matter_provider_idx").on(table.matter_id, table.provider),
+    index("legal_external_artifact_connection_idx").on(table.connection_id),
+    index("legal_external_artifact_external_idx").on(table.provider, table.external_id),
+  ],
+)
+
+export const LegalWorkspaceOperationTable = sqliteTable(
+  "legal_workspace_operation",
+  {
+    id: text().$type<LegalCode.WorkspaceOperationID>().primaryKey(),
+    matter_id: text()
+      .$type<LegalCode.MatterID>()
+      .notNull()
+      .references(() => LegalMatterTable.id, { onDelete: "cascade" }),
+    connection_id: text()
+      .$type<LegalCode.WorkspaceConnectionID>()
+      .notNull()
+      .references(() => LegalWorkspaceConnectionTable.id, { onDelete: "cascade" }),
+    external_artifact_id: text()
+      .$type<LegalCode.ExternalArtifactID>()
+      .references(() => LegalExternalArtifactTable.id, { onDelete: "set null" }),
+    provider: text().$type<LegalCode.WorkspaceProvider>().notNull(),
+    app: text().$type<LegalCode.WorkspaceApp>().notNull(),
+    operation: text().$type<LegalCode.WorkspaceOperationKind>().notNull(),
+    actor: text().notNull(),
+    status: text().$type<LegalCode.WorkspaceOperation["status"]>().notNull(),
+    approval: text().$type<LegalCode.HumanApprovalStatus>().notNull(),
+    input_summary: text().notNull(),
+    output_summary: text(),
+    source_spans: text({ mode: "json" }).notNull().$type<LegalCode.SourceSpan[]>(),
+    audit_event_id: text()
+      .$type<LegalCode.AuditEventID>()
+      .references(() => LegalAuditEventTable.id, { onDelete: "set null" }),
+    metadata: text({ mode: "json" }).notNull().$type<Record<string, unknown>>(),
+    ...Timestamps,
+  },
+  (table) => [
+    index("legal_workspace_operation_matter_time_idx").on(table.matter_id, table.time_created),
+    index("legal_workspace_operation_provider_operation_idx").on(table.provider, table.operation),
+    index("legal_workspace_operation_status_idx").on(table.status),
+  ],
+)

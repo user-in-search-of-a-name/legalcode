@@ -8,6 +8,7 @@ export const LegalCodeCapabilities = Schema.Struct({
   deployment: Schema.Literal("local_first_cloud_sync"),
   agentRoles: Schema.Array(LegalCode.AgentRole),
   artifactTypes: Schema.Array(LegalCode.ArtifactType),
+  workspaceProviders: Schema.Array(LegalCode.WorkspaceProvider),
   reliabilityGates: Schema.Array(Schema.String),
 }).annotate({ identifier: "LegalCodeCapabilities" })
 
@@ -31,6 +32,23 @@ export const LegalCodeGroup = HttpApiGroup.make("server.legalcode")
         identifier: "v2.legalcode.jurisdictions",
         summary: "List LegalCode jurisdiction packs",
         description: "List active and planned litigation jurisdiction packs.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.get("legalcode.workspace-integrations", "/api/legalcode/workspace-integrations", {
+      success: Schema.Struct({
+        data: Schema.Struct({
+          profiles: Schema.Array(LegalCode.WorkspaceIntegrationProfile),
+          operationPlans: Schema.Array(LegalCode.WorkspaceOperationPlan),
+        }),
+      }),
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.workspace-integrations",
+        summary: "List workspace integrations",
+        description:
+          "Describe Google Workspace and Microsoft 365 read/write/edit capabilities, OAuth scopes, and legal reliability controls.",
       }),
     ),
   )
