@@ -83,7 +83,7 @@ The desktop renderer should open provider authorization URLs through `platform.l
 
 App UI code should use `createLegalCodeWorkspaceClient` from `@opencode-ai/app` to call these endpoints. It wraps the local server credentials, opens provider auth/picker URLs through the desktop bridge when requested, imports selected files through the token vault, and runs writeback through conflict preflight before `execute-with-vault`.
 
-The desktop app exposes this workflow at `/legalcode/workspace`. The screen is matter-first: it captures the selected matter and actor, starts OAuth through the desktop bridge, finalizes token-vault-backed connections, imports provider-selected files into the matter, runs conflict preflight, and only then offers approved writeback with source span and audit-event fields.
+The desktop app exposes this workflow at `/legalcode/workspace`. The screen is matter-first: it captures the selected matter and actor, starts OAuth through the desktop bridge, finalizes token-vault-backed connections, imports provider-selected files into the matter, reads linked workspace artifacts through the encrypted vault, runs conflict preflight, and only then offers approved writeback with source span and audit-event fields.
 
 `POST /api/legalcode/workspace/connect/finalize` is the preferred desktop callback endpoint. It exchanges the authorization code, stores returned tokens in the encrypted local vault, and creates the LegalCode workspace connection record with `tokenVaultRef`.
 
@@ -112,6 +112,8 @@ Provider file pickers or custom picker pages should be opened through `platform.
 `POST /api/legalcode/workspace/execute` executes or dry-runs a matter-scoped operation after the desktop supplies an access token from the vault. It prepares and calls:
 - Google Drive metadata, Google Docs `batchUpdate`, and Google Sheets `batchUpdate`.
 - Microsoft Graph OneDrive/SharePoint item, Word content, and Excel workbook endpoints.
+
+The app-side workspace screen prepares writeback payloads according to provider app shape. Google Drive/Docs/Sheets and Excel updates are sent as parsed JSON request bodies. Word and default OneDrive/SharePoint content writes are sent as text content unless the user supplies a provider-relative workspace path that targets a structured Microsoft Graph endpoint.
 
 Execution blocks write/edit/export/sync operations unless the request includes human approval, an audit event, source spans, `conflictStatus: "clean"`, and `conflictCheckOperationID`. Dry-runs return the redacted HTTP request without touching the external workspace.
 

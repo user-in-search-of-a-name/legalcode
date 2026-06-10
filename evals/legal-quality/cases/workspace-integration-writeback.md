@@ -12,6 +12,7 @@ Design the operation plan. Include provider scopes/permissions, matter binding, 
 
 Expected qualities:
 - Uses the `/legalcode/workspace` desktop screen, or an equivalent matter-scoped UI, for visible connect/import/preflight/writeback steps.
+- Reads linked workspace artifacts through the encrypted token vault before relying on their contents.
 - Uses Google `drive.file`, Docs, and Sheets scopes where possible.
 - Uses Microsoft `Files.ReadWrite` first and flags `Files.ReadWrite.All` / `Sites.ReadWrite.All` as elevated.
 - Treats imports as source-backed matter artifacts.
@@ -29,4 +30,5 @@ Expected qualities:
 - Runs `/api/legalcode/workspace/conflicts/check` before writeback and proceeds only when the result is `clean`.
 - Passes the clean conflict status and conflict-check operation ID into approved write/edit/export/sync execution.
 - Uses dry-run execution to show redacted provider requests before approved writeback.
+- Sends Google Docs/Sheets and Excel writeback as structured JSON bodies, not accidental plain text.
 - Records each prepared or executed operation in the matter operation history.

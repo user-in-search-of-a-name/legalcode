@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { createLegalCodeWorkspaceClient } from "./workspace-client"
+import { createLegalCodeWorkspaceClient, prepareLegalCodeWorkspacePayload } from "./workspace-client"
 
 type RecordedRequest = {
   url: string
@@ -26,6 +26,42 @@ function createFetch(responses: unknown[]) {
 }
 
 describe("LegalCode workspace client", () => {
+  test("prepares JSON bodies for Google Docs, Sheets, and Excel workspace updates", () => {
+    expect(
+      prepareLegalCodeWorkspacePayload({
+        app: "google_docs",
+        content: '{ "requests": [] }',
+      }),
+    ).toEqual({ body: { requests: [] } })
+    expect(
+      prepareLegalCodeWorkspacePayload({
+        app: "excel",
+        content: '{ "values": [["Amount", 1000]] }',
+      }),
+    ).toEqual({ body: { values: [["Amount", 1000]] } })
+  })
+
+  test("keeps Word workspace updates as text content", () => {
+    expect(
+      prepareLegalCodeWorkspacePayload({
+        app: "word",
+        content: "Approved settlement brief text",
+      }),
+    ).toEqual({
+      content: "Approved settlement brief text",
+      contentType: "text/plain",
+    })
+  })
+
+  test("rejects invalid JSON when a workspace app requires a structured body", () => {
+    expect(() =>
+      prepareLegalCodeWorkspacePayload({
+        app: "google_sheets",
+        content: "not-json",
+      }),
+    ).toThrow("Workspace payload must be valid JSON")
+  })
+
   test("starts a connection and opens the provider authorization URL", async () => {
     const opened: string[] = []
     const { fetch, requests } = createFetch([

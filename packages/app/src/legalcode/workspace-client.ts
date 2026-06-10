@@ -18,6 +18,11 @@ type ApiResponse<Data> = {
 type QueryValue = string | undefined
 
 export type LegalCodeWorkspaceClient = ReturnType<typeof createLegalCodeWorkspaceClient>
+export type LegalCodeWorkspacePayloadInput = {
+  app: LegalCode.WorkspaceApp
+  content: string
+  workspacePath?: string
+}
 
 export function createLegalCodeWorkspaceClient(input: ClientInput) {
   const request = createRequester(input)
@@ -118,6 +123,15 @@ export function createLegalCodeWorkspaceClient(input: ClientInput) {
   }
 }
 
+export function prepareLegalCodeWorkspacePayload(
+  input: LegalCodeWorkspacePayloadInput,
+): Pick<LegalCode.WorkspaceExecuteWithVaultRequest, "body" | "content" | "contentType"> {
+  const content = input.content.trim()
+  if (!content) return {}
+  if (workspaceAppExpectsJSON(input)) return { body: parseWorkspaceJSON(content) }
+  return { content: input.content, contentType: "text/plain" }
+}
+
 function createRequester(input: ClientInput) {
   const fetchFn = input.fetch ?? fetch
   return async function request<Data>(
@@ -169,5 +183,22 @@ function errorMessage(value: unknown): string | undefined {
   const error = record.error
   if (error && typeof error === "object" && typeof (error as Record<string, unknown>).message === "string") {
     return (error as Record<string, string>).message
+  }
+}
+
+function workspaceAppExpectsJSON(input: LegalCodeWorkspacePayloadInput) {
+  if (input.app === "google_drive" || input.app === "google_docs" || input.app === "google_sheets") return true
+  if (input.app === "excel") return true
+  if ((input.app === "one_drive" || input.app === "sharepoint") && input.workspacePath && input.workspacePath !== "/content") {
+    return true
+  }
+  return false
+}
+
+function parseWorkspaceJSON(content: string) {
+  try {
+    return JSON.parse(content)
+  } catch {
+    throw new Error("Workspace payload must be valid JSON for this provider app.")
   }
 }

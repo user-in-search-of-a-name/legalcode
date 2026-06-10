@@ -2,7 +2,7 @@ import type { LegalCode } from "@opencode-ai/core/legalcode"
 import { makeEventListener } from "@solid-primitives/event-listener"
 import { createMemo, createSignal, For, type JSX, onMount, Show } from "solid-js"
 import { createStore } from "solid-js/store"
-import { createLegalCodeWorkspaceClient } from "@/legalcode/workspace-client"
+import { createLegalCodeWorkspaceClient, prepareLegalCodeWorkspacePayload } from "@/legalcode/workspace-client"
 import { usePlatform } from "@/context/platform"
 import { useServer } from "@/context/server"
 import {
@@ -58,6 +58,7 @@ export default function LegalCodeWorkspacePage() {
   const [artifacts, setArtifacts] = createSignal<LegalCode.ExternalArtifact[]>([])
   const [operations, setOperations] = createSignal<LegalCode.WorkspaceOperation[]>([])
   const [lastConflict, setLastConflict] = createSignal<LegalCode.WorkspaceConflictCheckResponse>()
+  const [lastRead, setLastRead] = createSignal<LegalCode.WorkspaceExecuteResponse>()
 
   const [matter, setMatter] = createStore({
     matterID: "",
@@ -88,14 +89,34 @@ export default function LegalCodeWorkspacePage() {
     app: "google_docs" as LegalCode.WorkspaceApp,
     operation: "edit" as LegalCode.WorkspaceOperationKind,
     resourceID: "",
+    siteID: "",
+    workspacePath: "",
+    httpMethod: "",
     auditEventID: "",
     sourceID: "",
     content: "",
+  })
+  const [readback, setReadback] = createStore({
+    connectionID: "",
+    externalArtifactID: "",
+    tokenVaultRef: "",
+    provider: "google_workspace" as LegalCode.WorkspaceProvider,
+    app: "google_docs" as LegalCode.WorkspaceApp,
+    resourceID: "",
+    siteID: "",
+    workspacePath: "",
   })
 
   const matterID = () => matter.matterID.trim() as LegalCode.MatterID
   const actor = () => matter.actor.trim() || "lawyer"
   const canRefreshMatter = () => Boolean(matter.matterID.trim() && client())
+  const connectionTokenVaultRef = (connectionID: string) =>
+    connections().find((connection) => connection.id === connectionID)?.tokenVaultRef
+  const readPreview = createMemo(() => {
+    const read = lastRead()
+    if (!read) return ""
+    return JSON.stringify(read.result?.json ?? read.result?.text ?? read.request, null, 2)
+  })
 
   const run = async (label: string, fn: () => Promise<void>) => {
     const api = client()
@@ -146,6 +167,22 @@ export default function LegalCodeWorkspacePage() {
     setPicker("externalID", link.externalID)
     setPicker("siteID", link.siteID ?? "")
     setStatus({ tone: "ok", text: `Selected workspace file ${link.name ?? link.externalID}. Import it to bind it to the matter.` })
+  }
+
+  const selectArtifact = (item: LegalCode.ExternalArtifact, fallbackTokenVaultRef = "") => {
+    const tokenVaultRef = connectionTokenVaultRef(item.connectionID) ?? fallbackTokenVaultRef
+    setWriteback("connectionID", item.connectionID)
+    setWriteback("externalArtifactID", item.id)
+    setWriteback("tokenVaultRef", tokenVaultRef)
+    setWriteback("provider", item.provider)
+    setWriteback("app", item.app)
+    setWriteback("resourceID", item.externalID)
+    setReadback("connectionID", item.connectionID)
+    setReadback("externalArtifactID", item.id)
+    setReadback("tokenVaultRef", tokenVaultRef)
+    setReadback("provider", item.provider)
+    setReadback("app", item.app)
+    setReadback("resourceID", item.externalID)
   }
 
   onMount(() => {
@@ -310,12 +347,7 @@ export default function LegalCodeWorkspacePage() {
                     actor: actor(),
                   })
                   if (imported.artifact) {
-                    setWriteback("connectionID", imported.artifact.connectionID)
-                    setWriteback("externalArtifactID", imported.artifact.id)
-                    setWriteback("tokenVaultRef", picker.tokenVaultRef)
-                    setWriteback("provider", imported.artifact.provider)
-                    setWriteback("app", imported.artifact.app)
-                    setWriteback("resourceID", imported.artifact.externalID)
+                    selectArtifact(imported.artifact, picker.tokenVaultRef)
                   }
                   setStatus({ tone: "ok", text: imported.artifact ? "Artifact imported and bound to this matter." : "Import planned." })
                   await refreshMatter()
@@ -335,6 +367,8 @@ export default function LegalCodeWorkspacePage() {
                   <button class={recordClass} onClick={() => {
                     setPicker("connectionID", item.id)
                     if (item.tokenVaultRef) setPicker("tokenVaultRef", item.tokenVaultRef)
+                    setReadback("connectionID", item.id)
+                    if (item.tokenVaultRef) setReadback("tokenVaultRef", item.tokenVaultRef)
                   }}>
                     <span>{item.provider}</span>
                     <small>{item.accountEmail ?? item.accountLabel ?? item.id}</small>
@@ -343,18 +377,89 @@ export default function LegalCodeWorkspacePage() {
               </RecordList>
               <RecordList title="Artifacts" empty="No imported workspace artifacts yet." items={artifacts()}>
                 {(item) => (
-                  <button class={recordClass} onClick={() => {
-                    setWriteback("connectionID", item.connectionID)
-                    setWriteback("externalArtifactID", item.id)
-                    setWriteback("provider", item.provider)
-                    setWriteback("app", item.app)
-                    setWriteback("resourceID", item.externalID)
-                  }}>
+                  <button class={recordClass} onClick={() => selectArtifact(item)}>
                     <span>{item.title}</span>
                     <small>{item.syncStatus} - {item.revision ?? item.etag ?? item.externalID}</small>
                   </button>
                 )}
               </RecordList>
+            </Section>
+
+            <Section title="Read From Workspace">
+              <div class="grid grid-cols-2 gap-2">
+                <Field label="Connection ID">
+                  <input class={inputClass} value={readback.connectionID} onInput={(event) => setReadback("connectionID", event.currentTarget.value)} />
+                </Field>
+                <Field label="External Artifact ID">
+                  <input class={inputClass} value={readback.externalArtifactID} onInput={(event) => setReadback("externalArtifactID", event.currentTarget.value)} />
+                </Field>
+              </div>
+              <Field label="Token Vault Ref">
+                <input class={inputClass} value={readback.tokenVaultRef} onInput={(event) => setReadback("tokenVaultRef", event.currentTarget.value)} />
+              </Field>
+              <div class="grid grid-cols-2 gap-2">
+                <Field label="Provider">
+                  <select class={inputClass} value={readback.provider} onInput={(event) => setReadback("provider", event.currentTarget.value as LegalCode.WorkspaceProvider)}>
+                    <For each={providerOptions}>{(provider) => <option value={provider}>{provider}</option>}</For>
+                  </select>
+                </Field>
+                <Field label="App">
+                  <select class={inputClass} value={readback.app} onInput={(event) => setReadback("app", event.currentTarget.value as LegalCode.WorkspaceApp)}>
+                    <For each={appOptions}>{(app) => <option value={app}>{app}</option>}</For>
+                  </select>
+                </Field>
+              </div>
+              <Field label="Resource ID">
+                <input class={inputClass} value={readback.resourceID} onInput={(event) => setReadback("resourceID", event.currentTarget.value)} />
+              </Field>
+              <div class="grid grid-cols-2 gap-2">
+                <Field label="SharePoint Site ID">
+                  <input class={inputClass} value={readback.siteID} onInput={(event) => setReadback("siteID", event.currentTarget.value)} />
+                </Field>
+                <Field label="Workspace Path">
+                  <input class={inputClass} value={readback.workspacePath} placeholder="/content" onInput={(event) => setReadback("workspacePath", event.currentTarget.value)} />
+                </Field>
+              </div>
+              <button
+                class={buttonClass}
+                disabled={!matter.matterID || !readback.connectionID || !readback.tokenVaultRef || !readback.resourceID || loading()}
+                onClick={() =>
+                  run("Reading workspace artifact through the encrypted token vault...", async () => {
+                    const response = await client()!.executeWithVault({
+                      matterID: matterID(),
+                      connectionID: readback.connectionID as LegalCode.WorkspaceConnectionID,
+                      externalArtifactID: readback.externalArtifactID
+                        ? (readback.externalArtifactID as LegalCode.ExternalArtifactID)
+                        : undefined,
+                      provider: readback.provider,
+                      app: readback.app,
+                      operation: "read",
+                      tokenVaultRef: readback.tokenVaultRef as LegalCode.WorkspaceTokenVaultRef,
+                      resourceID: readback.resourceID,
+                      siteID: readback.siteID || undefined,
+                      workspacePath: readback.workspacePath || undefined,
+                      actor: actor(),
+                      approval: "not_required",
+                      inputSummary: "Matter-scoped LegalCode workspace read.",
+                      sourceSpans: [],
+                    })
+                    setLastRead(response)
+                    setStatus({ tone: response.result?.ok === false ? "warn" : "ok", text: "Workspace read operation recorded in matter history." })
+                    await refreshMatter()
+                  })
+                }
+              >
+                Read
+              </button>
+              <Show when={readPreview()}>
+                {(preview) => (
+                  <textarea
+                    class={`${inputClass} min-h-32 resize-y py-2 font-mono text-[11px]`}
+                    readOnly
+                    value={preview()}
+                  />
+                )}
+              </Show>
             </Section>
 
             <Section title="Approved Writeback">
@@ -389,6 +494,17 @@ export default function LegalCodeWorkspacePage() {
               <Field label="Resource ID">
                 <input class={inputClass} value={writeback.resourceID} onInput={(event) => setWriteback("resourceID", event.currentTarget.value)} />
               </Field>
+              <div class="grid grid-cols-3 gap-2">
+                <Field label="SharePoint Site ID">
+                  <input class={inputClass} value={writeback.siteID} onInput={(event) => setWriteback("siteID", event.currentTarget.value)} />
+                </Field>
+                <Field label="Workspace Path">
+                  <input class={inputClass} value={writeback.workspacePath} placeholder="/content" onInput={(event) => setWriteback("workspacePath", event.currentTarget.value)} />
+                </Field>
+                <Field label="HTTP Method">
+                  <input class={inputClass} value={writeback.httpMethod} placeholder="POST" onInput={(event) => setWriteback("httpMethod", event.currentTarget.value)} />
+                </Field>
+              </div>
               <div class="grid grid-cols-2 gap-2">
                 <Field label="Audit Event ID">
                   <input class={inputClass} value={writeback.auditEventID} onInput={(event) => setWriteback("auditEventID", event.currentTarget.value)} />
@@ -432,6 +548,8 @@ export default function LegalCodeWorkspacePage() {
                     !writeback.auditEventID ||
                     !writeback.sourceID ||
                     !writeback.resourceID ||
+                    !writeback.content.trim() ||
+                    (writeback.provider === "microsoft_365" && writeback.app === "sharepoint" && !writeback.siteID) ||
                     loading()
                   }
                   onClick={() =>
@@ -445,13 +563,19 @@ export default function LegalCodeWorkspacePage() {
                         operation: writeback.operation,
                         tokenVaultRef: writeback.tokenVaultRef as LegalCode.WorkspaceTokenVaultRef,
                         resourceID: writeback.resourceID,
+                        siteID: writeback.siteID || undefined,
+                        workspacePath: writeback.workspacePath || undefined,
+                        httpMethod: writeback.httpMethod || undefined,
                         actor: actor(),
                         approval: "approved",
                         inputSummary: "Lawyer-approved LegalCode workspace writeback.",
                         sourceSpans: [{ sourceID: writeback.sourceID as LegalCode.SourceID }],
                         auditEventID: writeback.auditEventID as LegalCode.AuditEventID,
-                        content: writeback.content,
-                        contentType: "text/plain",
+                        ...prepareLegalCodeWorkspacePayload({
+                          app: writeback.app,
+                          content: writeback.content,
+                          workspacePath: writeback.workspacePath || undefined,
+                        }),
                       })
                       setStatus({ tone: "ok", text: "Approved writeback completed after a clean conflict preflight." })
                       await refreshMatter()
