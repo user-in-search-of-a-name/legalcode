@@ -2,7 +2,11 @@ import type { LegalCode } from "@opencode-ai/core/legalcode"
 import { makeEventListener } from "@solid-primitives/event-listener"
 import { createMemo, createSignal, For, type JSX, onMount, Show } from "solid-js"
 import { createStore } from "solid-js/store"
-import { createLegalCodeWorkspaceClient, prepareLegalCodeWorkspacePayload } from "@/legalcode/workspace-client"
+import {
+  createLegalCodeWorkspaceClient,
+  prepareLegalCodeWorkspacePayload,
+  summarizeLegalCodeWorkspaceConflict,
+} from "@/legalcode/workspace-client"
 import { usePlatform } from "@/context/platform"
 import { useServer } from "@/context/server"
 import {
@@ -135,6 +139,10 @@ export default function LegalCodeWorkspacePage() {
       null,
       2,
     )
+  })
+  const conflictAdvice = createMemo(() => {
+    const conflict = lastConflict()
+    return conflict ? summarizeLegalCodeWorkspaceConflict(conflict) : undefined
   })
 
   const run = async (label: string, fn: () => Promise<void>) => {
@@ -702,10 +710,61 @@ export default function LegalCodeWorkspacePage() {
               </div>
               <Show when={lastConflict()}>
                 {(conflict) => (
-                  <div class="rounded-[6px] border border-v2-border-border-muted p-3 text-[12px] leading-5 text-v2-text-text-muted">
+                  <div class="grid gap-2 rounded-[6px] border border-v2-border-border-muted p-3 text-[12px] leading-5 text-v2-text-text-muted">
                     <div>Status: {conflict().status}</div>
                     <div>Operation: {conflict().operation.id}</div>
                     <div>ETag: {conflict().currentETag ?? conflict().storedETag ?? "unknown"}</div>
+                    <Show when={conflictAdvice()}>
+                      {(advice) => (
+                        <div class="grid gap-2">
+                          <div>{advice().summary}</div>
+                          <Show when={advice().reasons.length > 0}>
+                            <div class="grid gap-1">
+                              <For each={advice().reasons}>{(reason) => <div>Reason: {reason}</div>}</For>
+                            </div>
+                          </Show>
+                          <div class="grid gap-1">
+                            <For each={advice().actions}>{(action) => <div>Action: {action}</div>}</For>
+                          </div>
+                          <button
+                            class={buttonClass}
+                            disabled={advice().canWrite || !writeback.tokenVaultRef || loading()}
+                            onClick={() =>
+                              run("Reading latest provider version for conflict review...", async () => {
+                                const artifact = conflict().artifact
+                                const tokenVaultRef = connectionTokenVaultRef(artifact.connectionID) ?? writeback.tokenVaultRef
+                                const response = await client()!.executeWithVault({
+                                  matterID: matterID(),
+                                  connectionID: artifact.connectionID,
+                                  externalArtifactID: artifact.id,
+                                  provider: artifact.provider,
+                                  app: artifact.app,
+                                  operation: "read",
+                                  tokenVaultRef: tokenVaultRef as LegalCode.WorkspaceTokenVaultRef,
+                                  resourceID: artifact.externalID,
+                                  siteID: writeback.siteID || undefined,
+                                  actor: actor(),
+                                  approval: "not_required",
+                                  inputSummary: "Matter-scoped conflict review read.",
+                                  sourceSpans: [],
+                                })
+                                setReadback("connectionID", artifact.connectionID)
+                                setReadback("externalArtifactID", artifact.id)
+                                setReadback("tokenVaultRef", tokenVaultRef)
+                                setReadback("provider", artifact.provider)
+                                setReadback("app", artifact.app)
+                                setReadback("resourceID", artifact.externalID)
+                                setLastRead(response)
+                                setStatus({ tone: "warn", text: "Latest provider version loaded for conflict review." })
+                                await refreshMatter()
+                              })
+                            }
+                          >
+                            Read Latest
+                          </button>
+                        </div>
+                      )}
+                    </Show>
                   </div>
                 )}
               </Show>

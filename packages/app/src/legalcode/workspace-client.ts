@@ -39,6 +39,13 @@ export type LegalCodeWorkspaceSelectedFileInput = {
   mimeType?: string
   webURL?: string
 }
+export type LegalCodeWorkspaceConflictAdvice = {
+  status: LegalCode.WorkspaceConflictStatus
+  canWrite: boolean
+  summary: string
+  reasons: string[]
+  actions: string[]
+}
 
 export function createLegalCodeWorkspaceClient(input: ClientInput) {
   const request = createRequester(input)
@@ -171,6 +178,36 @@ export function createLegalCodeWorkspaceSelectedFileCallbackURL(input: LegalCode
   if (input.mimeType) url.searchParams.set("mimeType", input.mimeType)
   if (input.webURL) url.searchParams.set("webURL", input.webURL)
   return url.toString()
+}
+
+export function summarizeLegalCodeWorkspaceConflict(
+  input: LegalCode.WorkspaceConflictCheckResponse,
+): LegalCodeWorkspaceConflictAdvice {
+  if (input.status === "clean") {
+    return {
+      status: input.status,
+      canWrite: true,
+      summary: "Workspace baseline is clean. Dry-run preview and approved writeback may proceed.",
+      reasons: [],
+      actions: ["Review the redacted dry-run request before final writeback."],
+    }
+  }
+
+  const reasons = input.conflictReasons.length > 0 ? input.conflictReasons : input.blockedReasons
+  return {
+    status: input.status,
+    canWrite: false,
+    summary:
+      input.status === "conflict"
+        ? "Workspace artifact changed after the last LegalCode import or sync."
+        : "LegalCode cannot prove the workspace artifact baseline is current.",
+    reasons,
+    actions: [
+      "Read the latest provider version through the encrypted token vault.",
+      "Compare the provider version with the lawyer-approved LegalCode draft.",
+      "Re-import or sync a fresh baseline before attempting writeback again.",
+    ],
+  }
 }
 
 function createRequester(input: ClientInput) {

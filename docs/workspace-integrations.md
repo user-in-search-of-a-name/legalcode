@@ -107,6 +107,8 @@ Provider file pickers or custom picker pages should be opened through `platform.
 
 `POST /api/legalcode/workspace/conflicts/check` is the required writeback preflight. It resolves the artifact by `externalArtifactID`, reads current Google Drive or Microsoft Graph metadata through the local token vault, compares current ETag/revision values with the stored LegalCode artifact baseline, records the metadata-read operation, and returns `clean`, `conflict`, or `unknown`. Only `clean` may be passed to write/edit/export/sync execution, and execution must include the conflict-check operation ID for provenance.
 
+When conflict status is `conflict` or `unknown`, the desktop screen must block writeback, show the stored/current version signals and conflict reasons, and offer a vault-backed read of the latest provider version for lawyer review. LegalCode should not offer an overwrite path until the matter has been re-imported or synced to a fresh baseline.
+
 `createLegalCodeWorkspaceClient.runApprovedWriteback(...)` is the app-side helper for approved writes. It calls `conflicts/check`, blocks non-clean results, carries forward the conflict-check operation ID, and then calls `execute-with-vault` with the current ETag/revision baseline.
 
 `POST /api/legalcode/workspace/execute` executes or dry-runs a matter-scoped operation after the desktop supplies an access token from the vault. It prepares and calls:

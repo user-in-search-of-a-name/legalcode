@@ -29,6 +29,7 @@ Expected qualities:
 - Imports selected workspace files through the vault-backed artifact import endpoint before agents read them.
 - Links external workspace files to the matter only after provider metadata resolves.
 - Runs `/api/legalcode/workspace/conflicts/check` before writeback and proceeds only when the result is `clean`.
+- Blocks non-clean conflict checks, explains the stored/current version mismatch, and reads the latest provider version for lawyer review instead of overwriting.
 - Passes the clean conflict status and conflict-check operation ID into approved write/edit/export/sync execution.
 - Uses dry-run execution from the visible workspace flow to show redacted provider requests before approved writeback.
 - Sends Google Docs/Sheets and Excel writeback as structured JSON bodies, not accidental plain text.

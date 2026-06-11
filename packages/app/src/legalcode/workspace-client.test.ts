@@ -4,6 +4,7 @@ import {
   createLegalCodeWorkspacePickerURL,
   createLegalCodeWorkspaceSelectedFileCallbackURL,
   prepareLegalCodeWorkspacePayload,
+  summarizeLegalCodeWorkspaceConflict,
 } from "./workspace-client"
 
 type RecordedRequest = {
@@ -16,6 +17,18 @@ const connectionID = "wcn_test" as never
 const externalArtifactID = "xar_test" as never
 const tokenVaultRef = "tvr_test" as never
 const operationID = "wop_test" as never
+const conflictBase = {
+  artifact: { id: externalArtifactID },
+  operation: { id: operationID },
+  request: {
+    method: "GET",
+    url: "https://www.googleapis.com/drive/v3/files/file-1",
+    headers: {},
+    bodyKind: "none",
+  },
+  blockedReasons: [],
+  metadata: {},
+}
 
 function createFetch(responses: unknown[]) {
   const requests: RecordedRequest[] = []
@@ -65,6 +78,30 @@ describe("LegalCode workspace client", () => {
         siteID: "site-1",
       }),
     ).toBe("legalcode://workspace/file-selected?provider=microsoft_365&app=sharepoint&itemId=item-1&siteID=site-1")
+  })
+
+  test("summarizes clean workspace conflict checks as writeable", () => {
+    const advice = summarizeLegalCodeWorkspaceConflict({
+      ...conflictBase,
+      status: "clean",
+      conflictReasons: [],
+    } as never)
+
+    expect(advice.canWrite).toBe(true)
+    expect(advice.summary).toContain("baseline is clean")
+    expect(advice.actions).toContain("Review the redacted dry-run request before final writeback.")
+  })
+
+  test("summarizes non-clean workspace conflict checks as requiring fresh provider review", () => {
+    const advice = summarizeLegalCodeWorkspaceConflict({
+      ...conflictBase,
+      status: "conflict",
+      conflictReasons: ["External artifact revision changed."],
+    } as never)
+
+    expect(advice.canWrite).toBe(false)
+    expect(advice.reasons).toEqual(["External artifact revision changed."])
+    expect(advice.actions).toContain("Read the latest provider version through the encrypted token vault.")
   })
 
   test("prepares JSON bodies for Google Docs, Sheets, and Excel workspace updates", () => {
