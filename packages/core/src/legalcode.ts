@@ -150,6 +150,84 @@ export type LegalSheetKind = typeof LegalSheetKind.Type
 export const RoadmapMilestoneStatus = Schema.Literals("planned", "in_progress", "available", "deferred")
 export type RoadmapMilestoneStatus = typeof RoadmapMilestoneStatus.Type
 
+export const LegalDataSourceTier = Schema.Literals(
+  "matter",
+  "official_primary",
+  "open_primary",
+  "licensed",
+  "unofficial_secondary",
+)
+export type LegalDataSourceTier = typeof LegalDataSourceTier.Type
+
+export const LegalDataSourceAccessMode = Schema.Literals(
+  "local_file",
+  "public_api",
+  "api_key",
+  "oauth",
+  "user_account",
+  "browser_session",
+  "manual_upload",
+)
+export type LegalDataSourceAccessMode = typeof LegalDataSourceAccessMode.Type
+
+export const LegalDataSourceCredentialMode = Schema.Literals(
+  "none_required",
+  "bring_your_own_key",
+  "bring_your_own_account",
+  "manual_upload",
+)
+export type LegalDataSourceCredentialMode = typeof LegalDataSourceCredentialMode.Type
+
+export const LegalDataSourceAuthorityLevel = Schema.Literals(
+  "matter_record",
+  "official_primary",
+  "open_primary",
+  "licensed_secondary",
+  "unofficial_secondary",
+  "unknown",
+)
+export type LegalDataSourceAuthorityLevel = typeof LegalDataSourceAuthorityLevel.Type
+
+export const LegalDataSourceProfile = Schema.Struct({
+  id: Schema.String,
+  label: Schema.String,
+  tier: LegalDataSourceTier,
+  authorityLevel: LegalDataSourceAuthorityLevel,
+  jurisdictions: Schema.Array(Jurisdiction),
+  accessModes: Schema.Array(LegalDataSourceAccessMode),
+  credentialMode: LegalDataSourceCredentialMode,
+  bundledCredentialsAllowed: Schema.Boolean,
+  baseURL: Schema.String.pipe(Schema.optional),
+  credentialEnvVars: Schema.Array(Schema.String),
+  allowedUses: Schema.Array(Schema.String),
+  prohibitedUses: Schema.Array(Schema.String),
+  auditRequired: Schema.Boolean,
+  sourceSpanSupport: Schema.Literals("native", "derived", "limited", "none"),
+  freshness: Schema.String,
+  notes: Schema.Array(Schema.String),
+})
+export type LegalDataSourceProfile = typeof LegalDataSourceProfile.Type
+
+export const SourceRegistryPolicy = Schema.Struct({
+  ossCredentialMode: Schema.Literal("bring_your_own_key_or_account"),
+  bundledPaidDataAllowed: Schema.Boolean,
+  defaultAuthorityOrder: Schema.Array(LegalDataSourceAuthorityLevel),
+  requiredMetadata: Schema.Array(Schema.String),
+  acceptanceCriteria: Schema.Array(Schema.String),
+})
+export type SourceRegistryPolicy = typeof SourceRegistryPolicy.Type
+
+export const ComputerUsePolicy = Schema.Struct({
+  mode: Schema.Literal("supervised_byok"),
+  allowedActions: Schema.Array(Schema.String),
+  prohibitedActions: Schema.Array(Schema.String),
+  approvalRequiredFor: Schema.Array(Schema.String),
+  credentialRules: Schema.Array(Schema.String),
+  auditEvents: Schema.Array(Schema.String),
+  sourceImportRules: Schema.Array(Schema.String),
+})
+export type ComputerUsePolicy = typeof ComputerUsePolicy.Type
+
 export const TrustLayerPolicy = Schema.Struct({
   sourceSpansRequired: Schema.Boolean,
   citationValidationRequired: Schema.Boolean,
@@ -229,6 +307,8 @@ export const ProductReliabilityRoadmap = Schema.Struct({
   sheetEngine: SheetEngineProfile,
   agentBroker: AgentBrokerPolicy,
   collaboration: CollaborationPolicy,
+  sourceRegistry: SourceRegistryPolicy,
+  computerUse: ComputerUsePolicy,
   milestones: Schema.Array(ProductRoadmapMilestone),
 })
 export type ProductReliabilityRoadmap = typeof ProductReliabilityRoadmap.Type

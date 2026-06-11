@@ -63,6 +63,22 @@ Acceptance gates:
 - No final/export action may proceed without a human approval marker.
 - No agent may read outside the selected matter scope.
 
+## Source Registry And BYOK
+
+LegalCode OSS uses bring-your-own-key or bring-your-own-account source integrations. The open-source build must not bundle paid legal data, shared legal research credentials, or hosted proxy access to licensed systems.
+
+Initial source tiers:
+
+- matter uploads and workspace files,
+- official primary sources,
+- open primary sources,
+- licensed sources through user-owned subscriptions,
+- unofficial secondary sources as research leads only.
+
+Every imported source should record authority level, jurisdiction, locator, retrieval time, content hash, parser or capture method, license or terms note, source spans, verification status, and freshness. The machine-readable source profile catalog is exposed at `GET /api/legalcode/source-integrations`.
+
+Computer use is allowed only as supervised BYOK browser work. It may navigate legal research systems, court portals, and filing sites with the user's account, but it may not submit filings, incur fees, upload documents, bypass access controls, or capture restricted content without human approval and audit logging.
+
 ## Litigation Workflows
 
 V1 workflows should be litigation-native:
@@ -148,5 +164,6 @@ The server is authoritative for identity, invites, permissions, audit log, matte
 The machine-readable version of this roadmap is exposed at:
 
 - `GET /api/legalcode/product-roadmap`
+- `GET /api/legalcode/source-integrations`
 
-The endpoint returns the launch assumptions, trust policy, document engine profile, sheet engine profile, agent broker policy, collaboration policy, and milestone acceptance criteria. UI work should consume that contract instead of re-encoding roadmap constants in page components.
+The roadmap endpoint returns the launch assumptions, trust policy, document engine profile, sheet engine profile, agent broker policy, collaboration policy, source registry policy, supervised computer-use policy, and milestone acceptance criteria. The source integrations endpoint returns the BYOK source provider catalog and source/computer-use rules. UI work should consume these contracts instead of re-encoding roadmap constants in page components.

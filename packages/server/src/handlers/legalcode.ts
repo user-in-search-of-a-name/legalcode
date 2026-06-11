@@ -62,6 +62,228 @@ const legalSheetTypes: LegalCode.LegalSheetKind[] = [
 
 const workspaceProviders: LegalCode.WorkspaceProvider[] = ["google_workspace", "microsoft_365"]
 
+const sourceRegistry: LegalCode.SourceRegistryPolicy = {
+  ossCredentialMode: "bring_your_own_key_or_account",
+  bundledPaidDataAllowed: false,
+  defaultAuthorityOrder: [
+    "matter_record",
+    "official_primary",
+    "open_primary",
+    "licensed_secondary",
+    "unofficial_secondary",
+    "unknown",
+  ],
+  requiredMetadata: [
+    "source_type",
+    "jurisdiction",
+    "authority_level",
+    "locator",
+    "retrieved_at",
+    "hash",
+    "parser",
+    "license_or_terms",
+    "source_spans",
+    "verification_status",
+    "freshness",
+  ],
+  acceptanceCriteria: [
+    "No OSS build ships paid legal data or shared vendor credentials.",
+    "Every source imported into a matter records authority level, retrieval time, hash, and license or terms note.",
+    "Every generated legal claim links to source spans or remains explicitly unresolved.",
+    "Every account-based source uses a user-provided key, OAuth grant, account session, or manual upload.",
+  ],
+}
+
+const computerUse: LegalCode.ComputerUsePolicy = {
+  mode: "supervised_byok",
+  allowedActions: [
+    "navigate approved legal research, court, filing, and workspace sites",
+    "download user-authorized public or account-accessible documents",
+    "check docket updates and official rules pages",
+    "capture screenshots and page text into matter audit events",
+    "prepare filing or portal forms for human review",
+  ],
+  prohibitedActions: [
+    "submit filings without the user's final click",
+    "bypass CAPTCHA, access controls, paywalls, or rate limits",
+    "store passwords outside the encrypted local vault or OS credential store",
+    "access sealed, restricted, or privileged materials without explicit user authorization",
+    "scrape licensed research systems at scale or against terms",
+    "upload or share matter documents without human approval",
+  ],
+  approvalRequiredFor: [
+    "login",
+    "paid download",
+    "document upload",
+    "filing submission",
+    "external writeback",
+    "capturing restricted matter content",
+  ],
+  credentialRules: [
+    "Use user-owned accounts and keys only.",
+    "Keep credentials in the encrypted vault or OS keychain.",
+    "Never commit, bundle, proxy, or relay shared LegalCode credentials in OSS builds.",
+  ],
+  auditEvents: [
+    "computer_use_session_started",
+    "computer_use_navigation",
+    "computer_use_download",
+    "computer_use_upload_prepared",
+    "computer_use_form_prepared",
+    "computer_use_human_approval",
+    "computer_use_session_ended",
+  ],
+  sourceImportRules: [
+    "Downloaded files become matter sources only after hash, locator, retrieval time, and authority level are recorded.",
+    "Screenshots and extracted page text must be marked derived and linked to the visible URL or file locator.",
+    "Portal actions that create legal risk must remain pending until a human approval marker is present.",
+  ],
+}
+
+const dataSourceProfiles: LegalCode.LegalDataSourceProfile[] = [
+  {
+    id: "matter_uploads",
+    label: "Matter Uploads",
+    tier: "matter",
+    authorityLevel: "matter_record",
+    jurisdictions: ["us", "india", "other"],
+    accessModes: ["local_file", "manual_upload"],
+    credentialMode: "manual_upload",
+    bundledCredentialsAllowed: false,
+    credentialEnvVars: [],
+    allowedUses: ["facts", "evidence", "contracts", "pleadings", "correspondence", "medical_records", "billing_records"],
+    prohibitedUses: ["treating extracted text as verified when OCR confidence or source spans are missing"],
+    auditRequired: true,
+    sourceSpanSupport: "derived",
+    freshness: "user supplied; update when the user imports a new version",
+    notes: ["Primary fact source for matter-specific work."],
+  },
+  {
+    id: "govinfo",
+    label: "GovInfo",
+    tier: "official_primary",
+    authorityLevel: "official_primary",
+    jurisdictions: ["us"],
+    accessModes: ["public_api", "api_key"],
+    credentialMode: "bring_your_own_key",
+    bundledCredentialsAllowed: false,
+    baseURL: "https://api.govinfo.gov",
+    credentialEnvVars: ["LEGALCODE_GOVINFO_API_KEY"],
+    allowedUses: ["federal_statutes", "federal_regulations", "congressional_materials", "official_publications"],
+    prohibitedUses: ["presenting current-law conclusions without checking currency and effective date"],
+    auditRequired: true,
+    sourceSpanSupport: "native",
+    freshness: "check provider package date and retrieval time",
+    notes: ["OSS builds must require the user to supply any GovInfo API key."],
+  },
+  {
+    id: "federal_register_ecfr",
+    label: "Federal Register and eCFR",
+    tier: "official_primary",
+    authorityLevel: "official_primary",
+    jurisdictions: ["us"],
+    accessModes: ["public_api"],
+    credentialMode: "none_required",
+    bundledCredentialsAllowed: false,
+    baseURL: "https://www.federalregister.gov",
+    credentialEnvVars: [],
+    allowedUses: ["agency_rules", "proposed_rules", "notices", "current_regulatory_text"],
+    prohibitedUses: ["using proposed rules as binding authority without labeling status"],
+    auditRequired: true,
+    sourceSpanSupport: "native",
+    freshness: "check publication date, effective date, and retrieval time",
+    notes: ["Prefer official API/page locators over secondary summaries."],
+  },
+  {
+    id: "courtlistener_recap",
+    label: "CourtListener and RECAP",
+    tier: "open_primary",
+    authorityLevel: "open_primary",
+    jurisdictions: ["us"],
+    accessModes: ["public_api", "api_key"],
+    credentialMode: "bring_your_own_key",
+    bundledCredentialsAllowed: false,
+    baseURL: "https://www.courtlistener.com",
+    credentialEnvVars: ["LEGALCODE_COURTLISTENER_API_KEY"],
+    allowedUses: ["opinions", "dockets", "recap_filings", "citations", "docket_alerts"],
+    prohibitedUses: ["treating missing RECAP documents as proof a filing does not exist"],
+    auditRequired: true,
+    sourceSpanSupport: "derived",
+    freshness: "check docket entry date, upload date, and retrieval time",
+    notes: ["Use before PACER when RECAP already has a free copy."],
+  },
+  {
+    id: "pacer",
+    label: "PACER",
+    tier: "official_primary",
+    authorityLevel: "official_primary",
+    jurisdictions: ["us"],
+    accessModes: ["user_account", "browser_session"],
+    credentialMode: "bring_your_own_account",
+    bundledCredentialsAllowed: false,
+    baseURL: "https://pacer.uscourts.gov",
+    credentialEnvVars: [],
+    allowedUses: ["federal_dockets", "federal_filings", "case_locator", "court_opinions"],
+    prohibitedUses: ["incurring fees without explicit user approval", "bulk scraping", "bypassing PACER controls"],
+    auditRequired: true,
+    sourceSpanSupport: "derived",
+    freshness: "record docket date, document number, download time, and fee approval",
+    notes: ["Use supervised computer use or official PACER developer resources with the user's own account."],
+  },
+  {
+    id: "caselaw_access_project",
+    label: "Caselaw Access Project",
+    tier: "open_primary",
+    authorityLevel: "open_primary",
+    jurisdictions: ["us"],
+    accessModes: ["public_api"],
+    credentialMode: "none_required",
+    bundledCredentialsAllowed: false,
+    baseURL: "https://case.law",
+    credentialEnvVars: [],
+    allowedUses: ["historical_case_law", "citation_resolution", "research_leads"],
+    prohibitedUses: ["assuming coverage is complete for current docket activity"],
+    auditRequired: true,
+    sourceSpanSupport: "native",
+    freshness: "record decision date, reporter, and retrieval time",
+    notes: ["Use coverage notes and jurisdiction metadata when citing cases."],
+  },
+  {
+    id: "licensed_research_byok",
+    label: "Licensed Research Platforms",
+    tier: "licensed",
+    authorityLevel: "licensed_secondary",
+    jurisdictions: ["us", "india", "other"],
+    accessModes: ["user_account", "browser_session"],
+    credentialMode: "bring_your_own_account",
+    bundledCredentialsAllowed: false,
+    credentialEnvVars: [],
+    allowedUses: ["research_with_user_subscription", "citation_checking", "secondary_sources"],
+    prohibitedUses: ["scraping at scale", "sharing credentials", "exporting content beyond user license", "training on licensed content"],
+    auditRequired: true,
+    sourceSpanSupport: "limited",
+    freshness: "record provider, visible citation, access time, and user account boundary",
+    notes: ["Westlaw, Lexis, Bloomberg Law, Fastcase, vLex, SCC Online, Manupatra, and similar systems are bring-your-own-account only."],
+  },
+  {
+    id: "india_official_sources",
+    label: "India Official Legal Sources",
+    tier: "official_primary",
+    authorityLevel: "official_primary",
+    jurisdictions: ["india"],
+    accessModes: ["public_api", "browser_session"],
+    credentialMode: "none_required",
+    credentialEnvVars: [],
+    bundledCredentialsAllowed: false,
+    allowedUses: ["statutes", "court_orders", "cause_lists", "tribunal_materials", "gazette_materials"],
+    prohibitedUses: ["treating unofficial mirrors as official without labeling them"],
+    auditRequired: true,
+    sourceSpanSupport: "derived",
+    freshness: "record court or ministry source, publication date, and retrieval time",
+    notes: ["Prefer India Code, eGazette, Supreme Court, High Court, tribunal, and eCourts official sources when available."],
+  },
+]
+
 const reliabilityGates = [
   "No filing-ready output without humanApproval: approved.",
   "No verified legal citation without at least one source span.",
@@ -166,6 +388,8 @@ const productRoadmap: LegalCode.ProductReliabilityRoadmap = {
     realtimeSignals: ["presence", "cursor", "selection", "active_cell", "typing", "agent_streaming_state"],
     authority: ["identity", "invites", "permissions", "audit_log", "matter_membership", "version_restore"],
   },
+  sourceRegistry,
+  computerUse,
   milestones: [
     {
       id: "foundation",
@@ -177,6 +401,30 @@ const productRoadmap: LegalCode.ProductReliabilityRoadmap = {
         "Core/server expose matter-scoped legal domain contracts.",
         "Agents can declare selected matter reads and intended outputs.",
         "Trust gates are available to UI and workflow runners.",
+      ],
+    },
+    {
+      id: "source_registry",
+      title: "BYOK Source Registry",
+      status: "in_progress",
+      summary: "Register matter, official, open, licensed, and browser-derived legal sources with authority levels and source spans.",
+      dependsOn: ["foundation"],
+      acceptanceCriteria: [
+        "OSS builds ship no paid legal data or shared provider credentials.",
+        "Every imported source records authority level, locator, retrieval time, hash, terms note, and source span strategy.",
+        "Licensed and account-based sources require user-owned keys, OAuth grants, accounts, or manual uploads.",
+      ],
+    },
+    {
+      id: "supervised_computer_use",
+      title: "Supervised Computer Use",
+      status: "planned",
+      summary: "Use visible, audited browser sessions for court portals and legal research systems when APIs are unavailable.",
+      dependsOn: ["source_registry", "local_storage"],
+      acceptanceCriteria: [
+        "Computer use cannot submit filings, incur fees, upload documents, or access restricted matter material without human approval.",
+        "Downloads and screenshots become matter sources only after audit, hash, retrieval time, and locator capture.",
+        "The system never bypasses access controls, CAPTCHA, paywalls, or licensed-source terms.",
       ],
     },
     {
@@ -539,6 +787,9 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
           litigationWorkflows: [...litigationWorkflows],
           legalSheetTypes: [...legalSheetTypes],
           workspaceProviders: [...workspaceProviders],
+          dataSourceProfiles: dataSourceProfiles.map(copyDataSourceProfile),
+          sourceRegistry: copySourceRegistry(),
+          computerUse: copyComputerUse(),
           reliabilityGates,
         },
       }),
@@ -577,11 +828,22 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
             realtimeSignals: [...productRoadmap.collaboration.realtimeSignals],
             authority: [...productRoadmap.collaboration.authority],
           },
+          sourceRegistry: copySourceRegistry(),
+          computerUse: copyComputerUse(),
           milestones: productRoadmap.milestones.map((milestone) => ({
             ...milestone,
             dependsOn: [...milestone.dependsOn],
             acceptanceCriteria: [...milestone.acceptanceCriteria],
           })),
+        },
+      }),
+    )
+    .handle("legalcode.source-integrations", () =>
+      Effect.succeed({
+        data: {
+          profiles: dataSourceProfiles.map(copyDataSourceProfile),
+          sourceRegistry: copySourceRegistry(),
+          computerUse: copyComputerUse(),
         },
       }),
     )
@@ -889,6 +1151,39 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
       }),
     ),
 )
+
+function copyDataSourceProfile(profile: LegalCode.LegalDataSourceProfile): LegalCode.LegalDataSourceProfile {
+  return {
+    ...profile,
+    jurisdictions: [...profile.jurisdictions],
+    accessModes: [...profile.accessModes],
+    credentialEnvVars: [...profile.credentialEnvVars],
+    allowedUses: [...profile.allowedUses],
+    prohibitedUses: [...profile.prohibitedUses],
+    notes: [...profile.notes],
+  }
+}
+
+function copySourceRegistry(): LegalCode.SourceRegistryPolicy {
+  return {
+    ...sourceRegistry,
+    defaultAuthorityOrder: [...sourceRegistry.defaultAuthorityOrder],
+    requiredMetadata: [...sourceRegistry.requiredMetadata],
+    acceptanceCriteria: [...sourceRegistry.acceptanceCriteria],
+  }
+}
+
+function copyComputerUse(): LegalCode.ComputerUsePolicy {
+  return {
+    ...computerUse,
+    allowedActions: [...computerUse.allowedActions],
+    prohibitedActions: [...computerUse.prohibitedActions],
+    approvalRequiredFor: [...computerUse.approvalRequiredFor],
+    credentialRules: [...computerUse.credentialRules],
+    auditEvents: [...computerUse.auditEvents],
+    sourceImportRules: [...computerUse.sourceImportRules],
+  }
+}
 
 const TOKEN_REFRESH_SKEW_SECONDS = 120
 

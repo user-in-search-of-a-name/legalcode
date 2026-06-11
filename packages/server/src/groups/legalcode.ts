@@ -12,6 +12,9 @@ export const LegalCodeCapabilities = Schema.Struct({
   litigationWorkflows: Schema.Array(LegalCode.LitigationWorkflowKind),
   legalSheetTypes: Schema.Array(LegalCode.LegalSheetKind),
   workspaceProviders: Schema.Array(LegalCode.WorkspaceProvider),
+  dataSourceProfiles: Schema.Array(LegalCode.LegalDataSourceProfile),
+  sourceRegistry: LegalCode.SourceRegistryPolicy,
+  computerUse: LegalCode.ComputerUsePolicy,
   reliabilityGates: Schema.Array(Schema.String),
 }).annotate({ identifier: "LegalCodeCapabilities" })
 
@@ -50,6 +53,24 @@ export const LegalCodeGroup = HttpApiGroup.make("server.legalcode")
         summary: "Get LegalCode product reliability roadmap",
         description:
           "Describe the local-first litigation coworker roadmap, trust layer, document/sheet engines, agent broker policy, and collaboration milestones.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.get("legalcode.source-integrations", "/api/legalcode/source-integrations", {
+      success: Schema.Struct({
+        data: Schema.Struct({
+          profiles: Schema.Array(LegalCode.LegalDataSourceProfile),
+          sourceRegistry: LegalCode.SourceRegistryPolicy,
+          computerUse: LegalCode.ComputerUsePolicy,
+        }),
+      }),
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.source-integrations",
+        summary: "List LegalCode source integrations",
+        description:
+          "Describe BYOK legal data sources, source registry requirements, and supervised computer-use rules for official, open, licensed, and matter sources.",
       }),
     ),
   )
