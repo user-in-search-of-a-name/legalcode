@@ -31,6 +31,35 @@ const artifactTypes: LegalCode.ArtifactType[] = [
   "note",
 ]
 
+const litigationWorkflows: LegalCode.LitigationWorkflowKind[] = [
+  "complaint_draft",
+  "answer_draft",
+  "motion_outline",
+  "discovery_request_draft",
+  "discovery_response_draft",
+  "deposition_prep",
+  "chronology_builder",
+  "issue_memo",
+  "exhibit_list",
+  "privilege_log",
+  "demand_letter",
+  "settlement_brief",
+  "hearing_prep",
+]
+
+const legalSheetTypes: LegalCode.LegalSheetKind[] = [
+  "issue_log",
+  "evidence_register",
+  "discovery_tracker",
+  "deadline_tracker",
+  "damages_table",
+  "privilege_log",
+  "obligation_tracker",
+  "diligence_request_list",
+  "clause_matrix",
+  "risk_register",
+]
+
 const workspaceProviders: LegalCode.WorkspaceProvider[] = ["google_workspace", "microsoft_365"]
 
 const reliabilityGates = [
@@ -40,6 +69,178 @@ const reliabilityGates = [
   "No agent action may omit context artifacts/sources from its provenance record.",
   "No workspace write/edit/export operation may run without matter scope, explicit user approval, and an audit event.",
 ]
+
+const productRoadmap: LegalCode.ProductReliabilityRoadmap = {
+  primaryLaunchUser: "us_solo_litigator",
+  primaryJurisdiction: "us",
+  nextJurisdictions: ["india", "other"],
+  posture: "human_in_the_loop_supervised_automation",
+  deployment: "local_first_desktop_encrypted_cloud_sync",
+  firstWedge: "multi_role_litigation_coworker",
+  matterCommandCenter: [
+    "parties",
+    "claims",
+    "deadlines",
+    "documents",
+    "evidence",
+    "research",
+    "pleadings",
+    "notes",
+    "tasks",
+    "audit_log",
+  ],
+  legalCoworkers: [...agentRoles],
+  litigationWorkflows: [...litigationWorkflows],
+  trustLayer: {
+    sourceSpansRequired: true,
+    citationValidationRequired: true,
+    quoteVerificationRequired: true,
+    factualClaimVerificationRequired: true,
+    unresolvedQuestionsRequired: true,
+    verifyBeforeFilingStatusRequired: true,
+    fakeCitationDetectionRequired: true,
+    confidenceRequired: true,
+    humanApprovalRequiredForFinal: true,
+    acceptanceCriteria: [
+      "Every legal or factual claim in a draft carries source spans or an unresolved question.",
+      "No citation may be displayed as verified unless it resolves to a stored source.",
+      "No quote may be displayed as verified unless the quoted text matches the source span.",
+      "No final/export action may proceed without a human approval marker.",
+    ],
+  },
+  documentEngine: {
+    foundation: "prosemirror",
+    collaboration: "yjs",
+    v1Features: [
+      "comments",
+      "suggestions",
+      "version_snapshots",
+      "source_anchors",
+      "agent_provenance_marks",
+      "docx_export",
+      "pdf_export",
+    ],
+    laterFeatures: ["word_tracked_change_round_trip", "advanced_redline_fidelity"],
+    exportTargets: ["docx", "pdf"],
+  },
+  sheetEngine: {
+    foundation: "typed_legal_tables",
+    collaboration: "yjs",
+    sheetKinds: [...legalSheetTypes],
+    v1Features: [
+      "cell_comments",
+      "range_comments",
+      "owner_status_severity_date_fields",
+      "document_excerpt_links",
+      "agent_extraction_provenance",
+      "version_snapshots",
+    ],
+    nonGoals: ["full_excel_formula_parity", "public_link_sharing"],
+  },
+  agentBroker: {
+    requiresMatterScope: true,
+    requiresDeclaredReads: true,
+    requiresDeclaredOutputs: true,
+    allowedOutputKinds: ["draft", "suggestion", "comment", "extraction", "final_candidate"],
+    finalOutputRequiresHumanApproval: true,
+    auditEveryReadWrite: true,
+    unauthorizedContextAccess: "deny",
+  },
+  collaboration: {
+    localFirst: true,
+    publicLinksAllowed: false,
+    inviteRequired: true,
+    encryptedCloudSync: true,
+    durableRecords: [
+      "matter",
+      "artifact",
+      "document_revision",
+      "sheet_revision",
+      "comment_thread",
+      "citation",
+      "deadline",
+      "task",
+      "audit_event",
+      "agent_action",
+    ],
+    realtimeSignals: ["presence", "cursor", "selection", "active_cell", "typing", "agent_streaming_state"],
+    authority: ["identity", "invites", "permissions", "audit_log", "matter_membership", "version_restore"],
+  },
+  milestones: [
+    {
+      id: "foundation",
+      title: "LegalCode Domain Foundation",
+      status: "in_progress",
+      summary: "Keep OpenCode runtime primitives while adding matter, artifact, trust, and agent provenance concepts.",
+      dependsOn: [],
+      acceptanceCriteria: [
+        "Core/server expose matter-scoped legal domain contracts.",
+        "Agents can declare selected matter reads and intended outputs.",
+        "Trust gates are available to UI and workflow runners.",
+      ],
+    },
+    {
+      id: "local_storage",
+      title: "Encrypted Local Matter Storage",
+      status: "planned",
+      summary: "Persist matter metadata, artifact index, extracted text, audit queue, and encrypted cache in local SQLite.",
+      dependsOn: ["foundation"],
+      acceptanceCriteria: [
+        "Matter data is private by default.",
+        "External sync remains disabled until the user enables collaboration for a matter.",
+        "Every agent read/write can be traced to a local audit event.",
+      ],
+    },
+    {
+      id: "document_engine",
+      title: "Collaborative Legal Documents",
+      status: "planned",
+      summary: "Use ProseMirror and Yjs for comments, suggestions, source anchors, snapshots, and export.",
+      dependsOn: ["foundation", "local_storage"],
+      acceptanceCriteria: [
+        "Concurrent edits reconcile without silent data loss.",
+        "Agent-drafted text is suggestion-first with provenance.",
+        "DOCX/PDF export requires human approval for final versions.",
+      ],
+    },
+    {
+      id: "sheet_engine",
+      title: "Structured Legal Sheets",
+      status: "planned",
+      summary: "Ship typed litigation tables before spreadsheet-formula parity.",
+      dependsOn: ["foundation", "local_storage"],
+      acceptanceCriteria: [
+        "Issue logs, evidence registers, discovery trackers, deadlines, damages tables, and privilege logs have typed columns.",
+        "Cells and ranges support comments, source links, owner, status, severity, and dates.",
+        "Agent extractions include source spans and confidence.",
+      ],
+    },
+    {
+      id: "cloud_sync",
+      title: "Invite-Based Encrypted Cloud Sync",
+      status: "planned",
+      summary: "Sync Yjs updates, presence, comments, and audit events after invite-based matter collaboration is enabled.",
+      dependsOn: ["document_engine", "sheet_engine"],
+      acceptanceCriteria: [
+        "Public link sharing is unavailable.",
+        "External users only see invited matters and artifacts.",
+        "Server remains authority for identity, invites, permissions, audit log, and membership.",
+      ],
+    },
+    {
+      id: "jurisdiction_packs",
+      title: "Jurisdiction Packs",
+      status: "in_progress",
+      summary: "Start with US litigation, add India next, and keep rules/templates/source preferences separable by jurisdiction.",
+      dependsOn: ["foundation"],
+      acceptanceCriteria: [
+        "US litigation pack is active.",
+        "India litigation pack stays planned until validated.",
+        "Deadline rules, citation formats, templates, research sources, and filing checklists are pack-owned.",
+      ],
+    },
+  ],
+}
 
 const jurisdictions: LegalCode.JurisdictionPack[] = [
   {
@@ -335,8 +536,52 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
           deployment: "local_first_cloud_sync" as const,
           agentRoles: [...agentRoles],
           artifactTypes: [...artifactTypes],
+          litigationWorkflows: [...litigationWorkflows],
+          legalSheetTypes: [...legalSheetTypes],
           workspaceProviders: [...workspaceProviders],
           reliabilityGates,
+        },
+      }),
+    )
+    .handle("legalcode.product-roadmap", () =>
+      Effect.succeed({
+        data: {
+          ...productRoadmap,
+          nextJurisdictions: [...productRoadmap.nextJurisdictions],
+          matterCommandCenter: [...productRoadmap.matterCommandCenter],
+          legalCoworkers: [...productRoadmap.legalCoworkers],
+          litigationWorkflows: [...productRoadmap.litigationWorkflows],
+          trustLayer: {
+            ...productRoadmap.trustLayer,
+            acceptanceCriteria: [...productRoadmap.trustLayer.acceptanceCriteria],
+          },
+          documentEngine: {
+            ...productRoadmap.documentEngine,
+            v1Features: [...productRoadmap.documentEngine.v1Features],
+            laterFeatures: [...productRoadmap.documentEngine.laterFeatures],
+            exportTargets: [...productRoadmap.documentEngine.exportTargets],
+          },
+          sheetEngine: {
+            ...productRoadmap.sheetEngine,
+            sheetKinds: [...productRoadmap.sheetEngine.sheetKinds],
+            v1Features: [...productRoadmap.sheetEngine.v1Features],
+            nonGoals: [...productRoadmap.sheetEngine.nonGoals],
+          },
+          agentBroker: {
+            ...productRoadmap.agentBroker,
+            allowedOutputKinds: [...productRoadmap.agentBroker.allowedOutputKinds],
+          },
+          collaboration: {
+            ...productRoadmap.collaboration,
+            durableRecords: [...productRoadmap.collaboration.durableRecords],
+            realtimeSignals: [...productRoadmap.collaboration.realtimeSignals],
+            authority: [...productRoadmap.collaboration.authority],
+          },
+          milestones: productRoadmap.milestones.map((milestone) => ({
+            ...milestone,
+            dependsOn: [...milestone.dependsOn],
+            acceptanceCriteria: [...milestone.acceptanceCriteria],
+          })),
         },
       }),
     )
@@ -402,6 +647,8 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
           accountEmail: ctx.payload.accountEmail,
           accountLabel: ctx.payload.accountLabel,
           tenantID: ctx.payload.tenantID,
+          clientID: ctx.payload.clientID,
+          clientSecret: ctx.payload.clientSecret,
           scopes,
           tokenType: token.tokenType,
           expiresIn: token.expiresIn,
@@ -478,25 +725,11 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
       "legalcode.workspace.artifact.import",
       Effect.fn(function* (ctx) {
         const vault = yield* LegalCodeTokenVault.Service
-        const token = yield* vault.get(ctx.payload.tokenVaultRef)
-        if (!token) {
-          return yield* Effect.fail(
-            new InvalidRequestError({
-              message: `Token vault reference not found: ${ctx.payload.tokenVaultRef}`,
-              kind: "legalcode_workspace",
-              field: "tokenVaultRef",
-            }),
-          )
-        }
-        if (token.provider !== ctx.payload.provider) {
-          return yield* Effect.fail(
-            new InvalidRequestError({
-              message: `Token vault provider ${token.provider} does not match requested provider ${ctx.payload.provider}`,
-              kind: "legalcode_workspace",
-              field: "provider",
-            }),
-          )
-        }
+        const token = yield* resolveVaultToken({
+          vault,
+          tokenVaultRef: ctx.payload.tokenVaultRef,
+          provider: ctx.payload.provider,
+        })
 
         const data = yield* Effect.tryPromise({
           try: () =>
@@ -576,25 +809,11 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
         }
 
         const vault = yield* LegalCodeTokenVault.Service
-        const token = yield* vault.get(ctx.payload.tokenVaultRef)
-        if (!token) {
-          return yield* Effect.fail(
-            new InvalidRequestError({
-              message: `Token vault reference not found: ${ctx.payload.tokenVaultRef}`,
-              kind: "legalcode_workspace",
-              field: "tokenVaultRef",
-            }),
-          )
-        }
-        if (token.provider !== artifact.provider) {
-          return yield* Effect.fail(
-            new InvalidRequestError({
-              message: `Token vault provider ${token.provider} does not match artifact provider ${artifact.provider}`,
-              kind: "legalcode_workspace",
-              field: "provider",
-            }),
-          )
-        }
+        const token = yield* resolveVaultToken({
+          vault,
+          tokenVaultRef: ctx.payload.tokenVaultRef,
+          provider: artifact.provider,
+        })
 
         const data = yield* Effect.tryPromise({
           try: () =>
@@ -651,25 +870,11 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
       "legalcode.workspace.execute.withVault",
       Effect.fn(function* (ctx) {
         const vault = yield* LegalCodeTokenVault.Service
-        const token = yield* vault.get(ctx.payload.tokenVaultRef)
-        if (!token) {
-          return yield* Effect.fail(
-            new InvalidRequestError({
-              message: `Token vault reference not found: ${ctx.payload.tokenVaultRef}`,
-              kind: "legalcode_workspace",
-              field: "tokenVaultRef",
-            }),
-          )
-        }
-        if (token.provider !== ctx.payload.provider) {
-          return yield* Effect.fail(
-            new InvalidRequestError({
-              message: `Token vault provider ${token.provider} does not match requested provider ${ctx.payload.provider}`,
-              kind: "legalcode_workspace",
-              field: "provider",
-            }),
-          )
-        }
+        const token = yield* resolveVaultToken({
+          vault,
+          tokenVaultRef: ctx.payload.tokenVaultRef,
+          provider: ctx.payload.provider,
+        })
         const data = yield* Effect.tryPromise({
           try: () =>
             LegalCodeWorkspace.execute({
@@ -684,6 +889,67 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
       }),
     ),
 )
+
+const TOKEN_REFRESH_SKEW_SECONDS = 120
+
+const resolveVaultToken = Effect.fn("LegalCodeHandler.resolveVaultToken")(function* (input: {
+  vault: LegalCodeTokenVault.Interface
+  tokenVaultRef: LegalCode.WorkspaceTokenVaultRef
+  provider: LegalCode.WorkspaceProvider
+}) {
+  const token = yield* input.vault.getRefreshable(input.tokenVaultRef)
+  if (!token) {
+    return yield* Effect.fail(
+      new InvalidRequestError({
+        message: `Token vault reference not found: ${input.tokenVaultRef}`,
+        kind: "legalcode_workspace",
+        field: "tokenVaultRef",
+      }),
+    )
+  }
+  if (token.provider !== input.provider) {
+    return yield* Effect.fail(
+      new InvalidRequestError({
+        message: `Token vault provider ${token.provider} does not match requested provider ${input.provider}`,
+        kind: "legalcode_workspace",
+        field: "provider",
+      }),
+    )
+  }
+  if (token.expiresIn === undefined || token.expiresIn > TOKEN_REFRESH_SKEW_SECONDS) return token
+  if (!token.refreshToken || !token.clientID) {
+    return yield* Effect.fail(
+      new InvalidRequestError({
+        message: "Workspace token expired and cannot be refreshed. Reconnect this workspace account.",
+        kind: "legalcode_workspace",
+        field: "tokenVaultRef",
+      }),
+    )
+  }
+
+  const refreshed = yield* Effect.tryPromise({
+    try: () =>
+      LegalCodeWorkspace.refreshToken({
+        provider: token.provider,
+        clientID: token.clientID!,
+        clientSecret: token.clientSecret,
+        tenantID: token.tenantID,
+        refreshToken: token.refreshToken!,
+        scopes: token.scopes,
+      }),
+    catch: (error) => workspaceError(error, "Workspace token refresh failed"),
+  })
+  yield* input.vault.update(input.tokenVaultRef, refreshed)
+  return {
+    ...token,
+    ...refreshed,
+    ref: input.tokenVaultRef,
+    clientID: token.clientID,
+    clientSecret: token.clientSecret,
+    tenantID: token.tenantID,
+    scopes: refreshed.scope?.split(/\s+/).filter(Boolean) ?? token.scopes,
+  }
+})
 
 function workspaceError(error: unknown, fallback: string) {
   const message = error instanceof Error ? error.message : fallback

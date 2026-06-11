@@ -23,12 +23,28 @@ type Secret = {
   accessToken: string
   refreshToken?: string
   idToken?: string
+  clientID?: string
+  clientSecret?: string
+  tenantID?: string
+}
+
+export type RefreshableToken = LegalCode.WorkspaceOAuthTokenResponse & {
+  ref: LegalCode.WorkspaceTokenVaultRef
+  clientID?: string
+  clientSecret?: string
+  tenantID?: string
+  scopes: string[]
 }
 
 export interface Interface {
   readonly store: (input: LegalCode.WorkspaceTokenVaultStore) => Effect.Effect<LegalCode.WorkspaceTokenVaultInfo>
   readonly list: (provider?: LegalCode.WorkspaceProvider) => Effect.Effect<LegalCode.WorkspaceTokenVaultInfo[]>
   readonly get: (ref: LegalCode.WorkspaceTokenVaultRef) => Effect.Effect<LegalCode.WorkspaceOAuthTokenResponse | undefined>
+  readonly getRefreshable: (ref: LegalCode.WorkspaceTokenVaultRef) => Effect.Effect<RefreshableToken | undefined>
+  readonly update: (
+    ref: LegalCode.WorkspaceTokenVaultRef,
+    input: LegalCode.WorkspaceOAuthTokenResponse,
+  ) => Effect.Effect<LegalCode.WorkspaceTokenVaultInfo | undefined>
   readonly remove: (ref: LegalCode.WorkspaceTokenVaultRef) => Effect.Effect<void>
 }
 
@@ -62,6 +78,9 @@ export const layer = Layer.effect(
             accessToken: input.accessToken,
             refreshToken: input.refreshToken,
             idToken: input.idToken,
+            clientID: input.clientID,
+            clientSecret: input.clientSecret,
+            tenantID: input.tenantID,
           } satisfies Secret),
         )
         const info: LegalCode.WorkspaceTokenVaultInfo = {
@@ -99,17 +118,54 @@ export const layer = Layer.effect(
         const entry = (yield* SynchronizedRef.get(state)).entries[ref]
         if (!entry) return undefined
         const secret = JSON.parse(decrypt(key, entry)) as Secret
+        return tokenFromEntry(entry, secret)
+      }),
+
+      getRefreshable: Effect.fn("LegalCodeTokenVault.getRefreshable")(function* (ref) {
+        const entry = (yield* SynchronizedRef.get(state)).entries[ref]
+        if (!entry) return undefined
+        const secret = JSON.parse(decrypt(key, entry)) as Secret
         return {
-          provider: entry.provider,
-          tokenType: entry.tokenType,
-          scope: entry.scopes.join(" "),
-          accessToken: secret.accessToken,
-          refreshToken: secret.refreshToken,
-          idToken: secret.idToken,
-          expiresIn: entry.expiresAt
-            ? Math.max(0, Math.floor((new Date(entry.expiresAt).getTime() - Date.now()) / 1000))
-            : undefined,
+          ...tokenFromEntry(entry, secret),
+          ref,
+          clientID: secret.clientID,
+          clientSecret: secret.clientSecret,
+          tenantID: secret.tenantID ?? entry.tenantID,
+          scopes: entry.scopes,
         }
+      }),
+
+      update: Effect.fn("LegalCodeTokenVault.update")(function* (ref, input) {
+        return yield* SynchronizedRef.modifyEffect(
+          state,
+          Effect.fnUntraced(function* (data) {
+            const entry = data.entries[ref]
+            if (!entry) return [undefined, data] as const
+            const previous = JSON.parse(decrypt(key, entry)) as Secret
+            const scopes = input.scope?.split(/\s+/).filter(Boolean) ?? entry.scopes
+            const expiresAt = input.expiresIn ? new Date(Date.now() + input.expiresIn * 1000).toISOString() : undefined
+            const encrypted = encrypt(
+              key,
+              JSON.stringify({
+                ...previous,
+                accessToken: input.accessToken,
+                refreshToken: input.refreshToken ?? previous.refreshToken,
+                idToken: input.idToken ?? previous.idToken,
+              } satisfies Secret),
+            )
+            const nextEntry: StoredEntry = {
+              ...entry,
+              ...encrypted,
+              scopes,
+              tokenType: input.tokenType,
+              expiresAt,
+              timeUpdated: new Date().toISOString(),
+            }
+            const next = { ...data, entries: { ...data.entries, [ref]: nextEntry } }
+            yield* write(next)
+            return [redact(nextEntry), next] as const
+          }),
+        )
       }),
 
       remove: Effect.fn("LegalCodeTokenVault.remove")(function* (ref) {
@@ -171,5 +227,19 @@ function redact(entry: StoredEntry): LegalCode.WorkspaceTokenVaultInfo {
     expiresAt: entry.expiresAt,
     timeCreated: entry.timeCreated,
     timeUpdated: entry.timeUpdated,
+  }
+}
+
+function tokenFromEntry(entry: StoredEntry, secret: Secret): LegalCode.WorkspaceOAuthTokenResponse {
+  return {
+    provider: entry.provider,
+    tokenType: entry.tokenType,
+    scope: entry.scopes.join(" "),
+    accessToken: secret.accessToken,
+    refreshToken: secret.refreshToken,
+    idToken: secret.idToken,
+    expiresIn: entry.expiresAt
+      ? Math.max(0, Math.floor((new Date(entry.expiresAt).getTime() - Date.now()) / 1000))
+      : undefined,
   }
 }

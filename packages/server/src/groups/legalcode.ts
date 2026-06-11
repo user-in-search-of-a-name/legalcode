@@ -9,6 +9,8 @@ export const LegalCodeCapabilities = Schema.Struct({
   deployment: Schema.Literal("local_first_cloud_sync"),
   agentRoles: Schema.Array(LegalCode.AgentRole),
   artifactTypes: Schema.Array(LegalCode.ArtifactType),
+  litigationWorkflows: Schema.Array(LegalCode.LitigationWorkflowKind),
+  legalSheetTypes: Schema.Array(LegalCode.LegalSheetKind),
   workspaceProviders: Schema.Array(LegalCode.WorkspaceProvider),
   reliabilityGates: Schema.Array(Schema.String),
 }).annotate({ identifier: "LegalCodeCapabilities" })
@@ -36,6 +38,18 @@ export const LegalCodeGroup = HttpApiGroup.make("server.legalcode")
         identifier: "v2.legalcode.capabilities",
         summary: "Get LegalCode capabilities",
         description: "Describe the active LegalCode product posture, roles, artifact types, and reliability gates.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.get("legalcode.product-roadmap", "/api/legalcode/product-roadmap", {
+      success: Schema.Struct({ data: LegalCode.ProductReliabilityRoadmap }),
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.product-roadmap",
+        summary: "Get LegalCode product reliability roadmap",
+        description:
+          "Describe the local-first litigation coworker roadmap, trust layer, document/sheet engines, agent broker policy, and collaboration milestones.",
       }),
     ),
   )

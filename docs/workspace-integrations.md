@@ -46,6 +46,8 @@ Tokens must not be stored directly in matter records. A connection stores only a
 
 The current local vault stores encrypted token blobs in the LegalCode data directory with file permissions restricted to the local user. Deployments should set `LEGALCODE_TOKEN_VAULT_KEY` or `OPENCODE_LEGALCODE_TOKEN_VAULT_KEY` from an OS keychain or enterprise secret manager. Without that variable, LegalCode derives a local machine-bound key from host/user/path information, which is acceptable only as a desktop bootstrap and not as enterprise key management.
 
+Vault-backed operations refresh expiring OAuth access tokens before provider calls when the vault has a refresh token and client metadata. Refresh metadata is encrypted with the token secret and is not copied into matter, artifact, connection, or operation records. If an expired token cannot be refreshed, LegalCode must require the user to reconnect the workspace account instead of attempting a write/read with stale credentials.
+
 ## Operation Rules
 
 Reads:
@@ -121,7 +123,7 @@ Execution blocks write/edit/export/sync operations unless the request includes h
 
 `GET /api/legalcode/workspace/operations` lists recorded workspace operation history for a matter. `POST /api/legalcode/workspace/execute` records each prepared or executed operation in `legal_workspace_operation`.
 
-`POST /api/legalcode/workspace/execute-with-vault` is the preferred execution path. It accepts a `tokenVaultRef`, resolves the bearer token inside the local vault, executes or dry-runs the operation, and records operation history without putting provider tokens in ordinary client payloads.
+`POST /api/legalcode/workspace/execute-with-vault` is the preferred execution path. It accepts a `tokenVaultRef`, resolves and refreshes the bearer token inside the local vault when needed, executes or dry-runs the operation, and records operation history without putting provider tokens in ordinary client payloads.
 
 The next implementation layer should add embedded provider picker SDK flows, richer conflict-resolution screens, and deeper Matter Command Center navigation around the workspace records.
 
@@ -134,6 +136,7 @@ The next implementation layer should add embedded provider picker SDK flows, ric
 - No workspace write/edit/export/sync operation runs unless the latest conflict preflight returned `clean`.
 - No workspace write/edit/export/sync operation is considered complete unless it has an audit event.
 - No ordinary matter, artifact, connection, or operation record may store raw provider tokens.
+- No expired workspace token may be used for a provider call; refresh it through the encrypted vault or require reconnect.
 
 ## Provider References
 

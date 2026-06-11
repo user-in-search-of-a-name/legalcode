@@ -116,6 +116,123 @@ export type AgentOutputKind = typeof AgentOutputKind.Type
 export const HumanApprovalStatus = Schema.Literals("not_required", "required", "approved", "rejected")
 export type HumanApprovalStatus = typeof HumanApprovalStatus.Type
 
+export const LitigationWorkflowKind = Schema.Literals(
+  "complaint_draft",
+  "answer_draft",
+  "motion_outline",
+  "discovery_request_draft",
+  "discovery_response_draft",
+  "deposition_prep",
+  "chronology_builder",
+  "issue_memo",
+  "exhibit_list",
+  "privilege_log",
+  "demand_letter",
+  "settlement_brief",
+  "hearing_prep",
+)
+export type LitigationWorkflowKind = typeof LitigationWorkflowKind.Type
+
+export const LegalSheetKind = Schema.Literals(
+  "issue_log",
+  "evidence_register",
+  "discovery_tracker",
+  "deadline_tracker",
+  "damages_table",
+  "privilege_log",
+  "obligation_tracker",
+  "diligence_request_list",
+  "clause_matrix",
+  "risk_register",
+)
+export type LegalSheetKind = typeof LegalSheetKind.Type
+
+export const RoadmapMilestoneStatus = Schema.Literals("planned", "in_progress", "available", "deferred")
+export type RoadmapMilestoneStatus = typeof RoadmapMilestoneStatus.Type
+
+export const TrustLayerPolicy = Schema.Struct({
+  sourceSpansRequired: Schema.Boolean,
+  citationValidationRequired: Schema.Boolean,
+  quoteVerificationRequired: Schema.Boolean,
+  factualClaimVerificationRequired: Schema.Boolean,
+  unresolvedQuestionsRequired: Schema.Boolean,
+  verifyBeforeFilingStatusRequired: Schema.Boolean,
+  fakeCitationDetectionRequired: Schema.Boolean,
+  confidenceRequired: Schema.Boolean,
+  humanApprovalRequiredForFinal: Schema.Boolean,
+  acceptanceCriteria: Schema.Array(Schema.String),
+})
+export type TrustLayerPolicy = typeof TrustLayerPolicy.Type
+
+export const DocumentEngineProfile = Schema.Struct({
+  foundation: Schema.Literal("prosemirror"),
+  collaboration: Schema.Literal("yjs"),
+  v1Features: Schema.Array(Schema.String),
+  laterFeatures: Schema.Array(Schema.String),
+  exportTargets: Schema.Array(Schema.Literals("docx", "pdf")),
+})
+export type DocumentEngineProfile = typeof DocumentEngineProfile.Type
+
+export const SheetEngineProfile = Schema.Struct({
+  foundation: Schema.Literal("typed_legal_tables"),
+  collaboration: Schema.Literal("yjs"),
+  sheetKinds: Schema.Array(LegalSheetKind),
+  v1Features: Schema.Array(Schema.String),
+  nonGoals: Schema.Array(Schema.String),
+})
+export type SheetEngineProfile = typeof SheetEngineProfile.Type
+
+export const AgentBrokerPolicy = Schema.Struct({
+  requiresMatterScope: Schema.Boolean,
+  requiresDeclaredReads: Schema.Boolean,
+  requiresDeclaredOutputs: Schema.Boolean,
+  allowedOutputKinds: Schema.Array(AgentOutputKind),
+  finalOutputRequiresHumanApproval: Schema.Boolean,
+  auditEveryReadWrite: Schema.Boolean,
+  unauthorizedContextAccess: Schema.Literal("deny"),
+})
+export type AgentBrokerPolicy = typeof AgentBrokerPolicy.Type
+
+export const CollaborationPolicy = Schema.Struct({
+  localFirst: Schema.Boolean,
+  publicLinksAllowed: Schema.Boolean,
+  inviteRequired: Schema.Boolean,
+  encryptedCloudSync: Schema.Boolean,
+  durableRecords: Schema.Array(Schema.String),
+  realtimeSignals: Schema.Array(Schema.String),
+  authority: Schema.Array(Schema.String),
+})
+export type CollaborationPolicy = typeof CollaborationPolicy.Type
+
+export const ProductRoadmapMilestone = Schema.Struct({
+  id: Schema.String,
+  title: Schema.String,
+  status: RoadmapMilestoneStatus,
+  summary: Schema.String,
+  dependsOn: Schema.Array(Schema.String),
+  acceptanceCriteria: Schema.Array(Schema.String),
+})
+export type ProductRoadmapMilestone = typeof ProductRoadmapMilestone.Type
+
+export const ProductReliabilityRoadmap = Schema.Struct({
+  primaryLaunchUser: Schema.Literal("us_solo_litigator"),
+  primaryJurisdiction: Schema.Literal("us"),
+  nextJurisdictions: Schema.Array(Jurisdiction),
+  posture: Schema.Literal("human_in_the_loop_supervised_automation"),
+  deployment: Schema.Literal("local_first_desktop_encrypted_cloud_sync"),
+  firstWedge: Schema.Literal("multi_role_litigation_coworker"),
+  matterCommandCenter: Schema.Array(Schema.String),
+  legalCoworkers: Schema.Array(AgentRole),
+  litigationWorkflows: Schema.Array(LitigationWorkflowKind),
+  trustLayer: TrustLayerPolicy,
+  documentEngine: DocumentEngineProfile,
+  sheetEngine: SheetEngineProfile,
+  agentBroker: AgentBrokerPolicy,
+  collaboration: CollaborationPolicy,
+  milestones: Schema.Array(ProductRoadmapMilestone),
+})
+export type ProductReliabilityRoadmap = typeof ProductReliabilityRoadmap.Type
+
 export const WorkspaceProvider = Schema.Literals("google_workspace", "microsoft_365")
 export type WorkspaceProvider = typeof WorkspaceProvider.Type
 
@@ -462,6 +579,16 @@ export const WorkspaceOAuthTokenRequest = Schema.Struct({
 })
 export type WorkspaceOAuthTokenRequest = typeof WorkspaceOAuthTokenRequest.Type
 
+export const WorkspaceOAuthRefreshRequest = Schema.Struct({
+  provider: WorkspaceProvider,
+  clientID: Schema.String,
+  refreshToken: Schema.String,
+  clientSecret: Schema.String.pipe(Schema.optional),
+  tenantID: Schema.String.pipe(Schema.optional),
+  scopes: Schema.Array(Schema.String).pipe(Schema.optional),
+})
+export type WorkspaceOAuthRefreshRequest = typeof WorkspaceOAuthRefreshRequest.Type
+
 export const WorkspaceOAuthTokenResponse = Schema.Struct({
   provider: WorkspaceProvider,
   tokenType: Schema.String,
@@ -678,6 +805,8 @@ export const WorkspaceTokenVaultStore = Schema.Struct({
   accountEmail: Schema.String.pipe(Schema.optional),
   accountLabel: Schema.String.pipe(Schema.optional),
   tenantID: Schema.String.pipe(Schema.optional),
+  clientID: Schema.String.pipe(Schema.optional),
+  clientSecret: Schema.String.pipe(Schema.optional),
   scopes: Schema.Array(Schema.String),
   tokenType: Schema.String,
   expiresIn: Schema.Number.pipe(Schema.optional),

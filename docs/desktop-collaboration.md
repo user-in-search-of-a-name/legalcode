@@ -137,6 +137,8 @@ Google Workspace and Microsoft 365 integrations should be optional, matter-scope
 10. Add CRDT co-editing for legal sheets.
 11. Add team roles, invites, artifact-level permissions, export, audit log, and retention controls.
 
+The canonical machine-readable sequence lives in `GET /api/legalcode/product-roadmap`. UI surfaces should prefer that endpoint for workflow lists, legal sheet types, trust requirements, and milestone acceptance criteria.
+
 ## Non-Negotiables
 
 - Matter data is private by default.

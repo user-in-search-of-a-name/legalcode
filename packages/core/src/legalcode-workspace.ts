@@ -127,6 +127,48 @@ export async function exchangeToken(
   }
 }
 
+export async function refreshToken(
+  input: LegalCode.WorkspaceOAuthRefreshRequest,
+): Promise<LegalCode.WorkspaceOAuthTokenResponse> {
+  const tokenURL =
+    input.provider === "google_workspace"
+      ? GOOGLE_TOKEN_URL
+      : `https://login.microsoftonline.com/${input.tenantID ?? MICROSOFT_TENANT}/oauth2/v2.0/token`
+  const body = new URLSearchParams({
+    client_id: input.clientID,
+    grant_type: "refresh_token",
+    refresh_token: input.refreshToken,
+  })
+  if (input.clientSecret) body.set("client_secret", input.clientSecret)
+  if (input.scopes?.length) body.set("scope", input.scopes.join(" "))
+
+  const response = await fetch(tokenURL, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body,
+  })
+  const json = (await response.json().catch(() => ({}))) as Record<string, unknown>
+  if (!response.ok) {
+    const message =
+      typeof json.error_description === "string"
+        ? json.error_description
+        : typeof json.error === "string"
+          ? json.error
+          : `Token refresh failed with HTTP ${response.status}`
+    throw new Error(message)
+  }
+
+  return {
+    provider: input.provider,
+    tokenType: String(json.token_type ?? "Bearer"),
+    expiresIn: typeof json.expires_in === "number" ? json.expires_in : undefined,
+    scope: typeof json.scope === "string" ? json.scope : undefined,
+    accessToken: String(json.access_token ?? ""),
+    refreshToken: typeof json.refresh_token === "string" ? json.refresh_token : input.refreshToken,
+    idToken: typeof json.id_token === "string" ? json.id_token : undefined,
+  }
+}
+
 export function prepareExecuteRequest(input: LegalCode.WorkspaceExecuteRequest): {
   request: LegalCode.WorkspaceExecutePreparedRequest
   fetchHeaders: Record<string, string>

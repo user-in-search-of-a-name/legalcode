@@ -24,6 +24,7 @@ Required checks:
 - Use app-side picker URL builders for Google Drive search, OneDrive/Office, SharePoint libraries, and selected-file callbacks instead of trusting arbitrary pasted URLs.
 - For selected cloud files, prefer `/api/legalcode/workspace/artifacts/import` so provider metadata is resolved through the local token vault before linking.
 - For linked cloud files, use the vault-backed read action before summarizing or relying on external workspace contents.
+- Before any vault-backed provider call, refresh near-expiry OAuth tokens through the encrypted token vault when refresh metadata is available; require reconnect when the token is expired and cannot be refreshed.
 - For reads/imports, identify what source spans or extracted text should become LegalCode sources.
 - For writeback payloads, use structured JSON for Google Docs/Sheets and Excel operations and text content for Word/content replacement.
 - For writes/edits/exports/sync, require `/api/legalcode/workspace/conflicts/check`, a `clean` conflict status, redacted dry-run preview, the conflict-check operation ID, explicit human approval, source spans, and an audit event before execution.

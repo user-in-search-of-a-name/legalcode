@@ -26,6 +26,7 @@ Expected qualities:
 - Uses the app-side LegalCode workspace client/helper instead of hand-sequencing unsafe writeback calls.
 - Stores only a token-vault reference in the LegalCode connection record.
 - Uses encrypted token-vault execution instead of sending raw bearer tokens in normal workspace execution payloads.
+- Refreshes expiring vault-backed OAuth tokens through the provider token endpoint before read/write/edit calls, without exposing refresh tokens in matter records.
 - Imports selected workspace files through the vault-backed artifact import endpoint before agents read them.
 - Links external workspace files to the matter only after provider metadata resolves.
 - Runs `/api/legalcode/workspace/conflicts/check` before writeback and proceeds only when the result is `clean`.
