@@ -44,6 +44,7 @@ Use Codex as the quality bar:
 - `.opencode/command/legal-source-import.md` adds a BYOK source import and supervised computer-use retrieval workflow.
 - `evals/legal-quality/README.md` defines the initial quality rubric and seed benchmark cases.
 - `docs/desktop-collaboration.md` defines the standalone desktop and Google Docs/Sheets-style team collaboration architecture.
+- `docs/memory-integrations.md` defines optional local memory provider policy, with MemPalace as the first planned provider.
 - `docs/product-reliability-roadmap.md` defines the US-litigation-first LegalCode product roadmap, trust layer, document/sheet engines, collaboration policy, and acceptance gates.
 - `docs/source-integrations.md` defines bring-your-own-key/account legal source integrations and supervised computer-use rules for OSS.
 - `docs/workspace-integrations.md` defines matter-scoped Google Workspace and Microsoft 365 read/write/edit integration rules.
@@ -51,6 +52,7 @@ Use Codex as the quality bar:
 - `jurisdictions/india-litigation.json` starts the planned India litigation jurisdiction pack.
 - `GET /api/legalcode/product-roadmap` exposes the roadmap as machine-readable LegalCode capability metadata.
 - `GET /api/legalcode/source-integrations` exposes BYOK source profiles, source registry requirements, and supervised computer-use policy.
+- `GET /api/legalcode/memory-integrations` exposes optional local memory provider policy and MemPalace controls.
 
 ## Default Legal Guardrails
 
@@ -66,8 +68,9 @@ Use Codex as the quality bar:
 3. Build the matter command center for US solo litigators with parties, claims, deadlines, documents, evidence, research, pleadings, notes, tasks, and audit log.
 4. Add the trust dashboard for source spans, citation verification, quote checks, unresolved questions, filing readiness, and human approval.
 5. Add the BYOK source registry for matter uploads, official sources, open legal APIs, licensed research accounts, and supervised computer-use captures.
-6. Add ProseMirror/Yjs legal documents with comments, suggestions, source anchors, version snapshots, and DOCX/PDF export.
-7. Add Yjs-backed structured legal sheets for issue logs, evidence registers, discovery trackers, deadlines, damages, and privilege logs.
-8. Add the permissioned agent broker so every legal coworker declares matter reads, outputs, confidence, verification status, and provenance.
-9. Add invite-based encrypted cloud sync for presence, comments, document/sheet updates, audit events, permissions, and version restore.
-10. Expand jurisdiction packs after US litigation, with India litigation as the next pack.
+6. Add optional local memory with MemPalace-style matter continuity, visible retrieval, and matter-scoped agent diaries.
+7. Add ProseMirror/Yjs legal documents with comments, suggestions, source anchors, version snapshots, and DOCX/PDF export.
+8. Add Yjs-backed structured legal sheets for issue logs, evidence registers, discovery trackers, deadlines, damages, and privilege logs.
+9. Add the permissioned agent broker so every legal coworker declares matter reads, outputs, confidence, verification status, and provenance.
+10. Add invite-based encrypted cloud sync for presence, comments, document/sheet updates, audit events, permissions, and version restore.
+11. Expand jurisdiction packs after US litigation, with India litigation as the next pack.

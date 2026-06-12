@@ -79,6 +79,14 @@ Every imported source should record authority level, jurisdiction, locator, retr
 
 Computer use is allowed only as supervised BYOK browser work. It may navigate legal research systems, court portals, and filing sites with the user's account, but it may not submit filings, incur fees, upload documents, bypass access controls, or capture restricted content without human approval and audit logging.
 
+## Optional Local Memory
+
+LegalCode can use optional local memory for matter continuity and agent diaries. MemPalace is the first planned provider because it is local-first, stores verbatim text, supports CLI/MCP/Docker access patterns, and has local/self-hosted backend options.
+
+Memory is not legal authority. Retrieved memories must remain visible before prompt injection and must be tied back to source registry records before they are treated as verified facts, law, deadlines, citations, or quotes.
+
+Memory must be opt-in per installation and per matter. It must never store passwords, API keys, refresh tokens, or session cookies. External memory backends require explicit user opt-in and audit logging.
+
 ## Litigation Workflows
 
 V1 workflows should be litigation-native:
@@ -165,5 +173,6 @@ The machine-readable version of this roadmap is exposed at:
 
 - `GET /api/legalcode/product-roadmap`
 - `GET /api/legalcode/source-integrations`
+- `GET /api/legalcode/memory-integrations`
 
-The roadmap endpoint returns the launch assumptions, trust policy, document engine profile, sheet engine profile, agent broker policy, collaboration policy, source registry policy, supervised computer-use policy, and milestone acceptance criteria. The source integrations endpoint returns the BYOK source provider catalog and source/computer-use rules. UI work should consume these contracts instead of re-encoding roadmap constants in page components.
+The roadmap endpoint returns the launch assumptions, trust policy, document engine profile, sheet engine profile, agent broker policy, collaboration policy, source registry policy, supervised computer-use policy, memory policy, and milestone acceptance criteria. The source integrations endpoint returns the BYOK source provider catalog and source/computer-use rules. The memory integrations endpoint returns optional local memory providers and controls. UI work should consume these contracts instead of re-encoding roadmap constants in page components.

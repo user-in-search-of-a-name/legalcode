@@ -228,6 +228,38 @@ export const ComputerUsePolicy = Schema.Struct({
 })
 export type ComputerUsePolicy = typeof ComputerUsePolicy.Type
 
+export const MemoryProviderStatus = Schema.Literals("planned", "available", "experimental")
+export type MemoryProviderStatus = typeof MemoryProviderStatus.Type
+
+export const MemoryProviderAccessMode = Schema.Literals("local_cli", "mcp_stdio", "docker_stdio", "self_hosted_backend")
+export type MemoryProviderAccessMode = typeof MemoryProviderAccessMode.Type
+
+export const MemoryProviderProfile = Schema.Struct({
+  id: Schema.String,
+  label: Schema.String,
+  status: MemoryProviderStatus,
+  accessModes: Schema.Array(MemoryProviderAccessMode),
+  localFirst: Schema.Boolean,
+  storesVerbatimText: Schema.Boolean,
+  legalAuthoritySource: Schema.Boolean,
+  bundledServiceAllowed: Schema.Boolean,
+  defaultBackend: Schema.String,
+  optionalBackends: Schema.Array(Schema.String),
+  allowedUses: Schema.Array(Schema.String),
+  prohibitedUses: Schema.Array(Schema.String),
+  requiredUserControls: Schema.Array(Schema.String),
+  auditEvents: Schema.Array(Schema.String),
+  notes: Schema.Array(Schema.String),
+})
+export type MemoryProviderProfile = typeof MemoryProviderProfile.Type
+
+export const MemoryPolicy = Schema.Struct({
+  defaultMode: Schema.Literal("optional_local_memory"),
+  providers: Schema.Array(MemoryProviderProfile),
+  acceptanceCriteria: Schema.Array(Schema.String),
+})
+export type MemoryPolicy = typeof MemoryPolicy.Type
+
 export const TrustLayerPolicy = Schema.Struct({
   sourceSpansRequired: Schema.Boolean,
   citationValidationRequired: Schema.Boolean,
@@ -309,6 +341,7 @@ export const ProductReliabilityRoadmap = Schema.Struct({
   collaboration: CollaborationPolicy,
   sourceRegistry: SourceRegistryPolicy,
   computerUse: ComputerUsePolicy,
+  memory: MemoryPolicy,
   milestones: Schema.Array(ProductRoadmapMilestone),
 })
 export type ProductReliabilityRoadmap = typeof ProductReliabilityRoadmap.Type

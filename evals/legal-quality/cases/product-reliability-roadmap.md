@@ -2,7 +2,7 @@
 
 ## Prompt
 
-Turn LegalCode into a product that solo litigators can rely on. Start with US litigation, then India, then other jurisdictions. Specify the matter command center, role-specific legal coworkers, trust layer, litigation workflows, legal documents, structured legal sheets, collaboration model, local-first storage, cloud sync, jurisdiction packs, source integrations, supervised computer use, tests, and acceptance criteria. Keep the OSS version bring-your-own-key/account only.
+Turn LegalCode into a product that solo litigators can rely on. Start with US litigation, then India, then other jurisdictions. Specify the matter command center, role-specific legal coworkers, trust layer, litigation workflows, legal documents, structured legal sheets, collaboration model, local-first storage, cloud sync, jurisdiction packs, source integrations, supervised computer use, optional local memory, tests, and acceptance criteria. Keep the OSS version bring-your-own-key/account only.
 
 ## Expected Qualities
 
@@ -16,5 +16,6 @@ Turn LegalCode into a product that solo litigators can rely on. Start with US li
 - Keeps OSS data access bring-your-own-key/account only, with no bundled paid legal data or shared licensed-source credentials.
 - Defines source tiers for matter records, official primary sources, open primary sources, licensed sources, and unofficial research leads.
 - Allows computer use only as a supervised, audited browser session that cannot submit filings, incur fees, bypass controls, or upload/download sensitive matter material without human approval.
+- Treats MemPalace-style memory as optional local continuity support with matter scoping, provenance-before-injection, no secret storage, and no legal-authority status.
 - Requires agent action provenance and denies unauthorized context access outside the selected matter.
 - Includes golden matter fixtures, trust evals, workflow tests, collaboration tests, security tests, and explicit acceptance criteria.

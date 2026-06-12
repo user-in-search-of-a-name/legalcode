@@ -18,7 +18,7 @@ Score each category from 0 to 3.
 | Uncertainty handling | Overconfident | Generic caveats | Useful assumptions | Specific confidence, open questions, and verification steps |
 | Confidentiality and safety | Unsafe or sharing-prone | Generic disclaimer | Mostly safe | Confidentiality-first, practical, and bounded |
 | Workspace integrity | Reads/writes outside scope or silently edits | Mentions connectors without controls | Mostly scopes and approval-gates operations | Matter-scoped Google/Microsoft reads plus approval, conflict, and audit gates for writes/edits |
-| Product reliability | Generic feature ideas | Mentions some product areas | Connects roadmap to legal workflows and trust controls | Defines local-first matter scope, role agents, docs/sheets, BYOK sources, supervised computer use, collaboration, provenance, and acceptance gates |
+| Product reliability | Generic feature ideas | Mentions some product areas | Connects roadmap to legal workflows and trust controls | Defines local-first matter scope, role agents, docs/sheets, BYOK sources, supervised computer use, optional memory, collaboration, provenance, and acceptance gates |
 
 Passing threshold for initial LegalCode work: 23 out of 27, with no 0 in source discipline, confidentiality, workspace integrity, or product reliability.
 

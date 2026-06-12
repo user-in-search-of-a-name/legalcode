@@ -140,6 +140,67 @@ const computerUse: LegalCode.ComputerUsePolicy = {
   ],
 }
 
+const memory: LegalCode.MemoryPolicy = {
+  defaultMode: "optional_local_memory",
+  providers: [
+    {
+      id: "mempalace",
+      label: "MemPalace",
+      status: "planned",
+      accessModes: ["local_cli", "mcp_stdio", "docker_stdio", "self_hosted_backend"],
+      localFirst: true,
+      storesVerbatimText: true,
+      legalAuthoritySource: false,
+      bundledServiceAllowed: false,
+      defaultBackend: "local_chromadb",
+      optionalBackends: ["sqlite_exact", "qdrant", "pgvector"],
+      allowedUses: [
+        "matter_continuity",
+        "agent_diaries",
+        "retrieving prior user preferences",
+        "retrieving prior drafting decisions",
+        "cross-session project recall",
+        "local transcript search",
+      ],
+      prohibitedUses: [
+        "treating memory as verified legal authority",
+        "storing passwords, API keys, or privileged access tokens",
+        "sharing matter memory across clients without an explicit matter boundary",
+        "sending verbatim matter text to external backends without opt-in",
+        "training models on matter memory by default",
+      ],
+      requiredUserControls: [
+        "enable or disable memory per installation",
+        "enable or disable memory per matter",
+        "choose local or self-hosted backend",
+        "clear matter memory",
+        "inspect retrieved memories before they enter an agent prompt",
+        "exclude artifacts, folders, or source types from memory mining",
+      ],
+      auditEvents: [
+        "memory_provider_connected",
+        "memory_mined",
+        "memory_retrieved",
+        "memory_injected",
+        "memory_disabled",
+        "memory_cleared",
+      ],
+      notes: [
+        "Integrate through CLI or MCP first instead of vendoring the Python project.",
+        "MemPalace stores verbatim text, so LegalCode must treat it as sensitive matter data.",
+        "External MemPalace backends are user opt-in and must be labeled as leaving local storage.",
+      ],
+    },
+  ],
+  acceptanceCriteria: [
+    "Memory is optional and disabled for a matter until the user enables it.",
+    "Memory retrieval must show provenance before it is injected into an agent context.",
+    "Memory content is never treated as verified legal authority without source registry validation.",
+    "No secrets, provider tokens, or passwords are written to memory.",
+    "External memory backends require explicit user opt-in and audit logging.",
+  ],
+}
+
 const dataSourceProfiles: LegalCode.LegalDataSourceProfile[] = [
   {
     id: "matter_uploads",
@@ -390,6 +451,7 @@ const productRoadmap: LegalCode.ProductReliabilityRoadmap = {
   },
   sourceRegistry,
   computerUse,
+  memory,
   milestones: [
     {
       id: "foundation",
@@ -425,6 +487,18 @@ const productRoadmap: LegalCode.ProductReliabilityRoadmap = {
         "Computer use cannot submit filings, incur fees, upload documents, or access restricted matter material without human approval.",
         "Downloads and screenshots become matter sources only after audit, hash, retrieval time, and locator capture.",
         "The system never bypasses access controls, CAPTCHA, paywalls, or licensed-source terms.",
+      ],
+    },
+    {
+      id: "optional_local_memory",
+      title: "Optional Local Memory",
+      status: "planned",
+      summary: "Use MemPalace-style local memory for matter continuity, agent diaries, and cross-session recall without treating memory as legal authority.",
+      dependsOn: ["source_registry", "local_storage"],
+      acceptanceCriteria: [
+        "Memory is opt-in per installation and per matter.",
+        "Retrieved memories are shown with provenance before agent injection.",
+        "Matter memory never stores secrets and never crosses client/matter boundaries without explicit user action.",
       ],
     },
     {
@@ -790,6 +864,7 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
           dataSourceProfiles: dataSourceProfiles.map(copyDataSourceProfile),
           sourceRegistry: copySourceRegistry(),
           computerUse: copyComputerUse(),
+          memory: copyMemory(),
           reliabilityGates,
         },
       }),
@@ -830,12 +905,18 @@ export const LegalCodeHandler = HttpApiBuilder.group(Api, "server.legalcode", (h
           },
           sourceRegistry: copySourceRegistry(),
           computerUse: copyComputerUse(),
+          memory: copyMemory(),
           milestones: productRoadmap.milestones.map((milestone) => ({
             ...milestone,
             dependsOn: [...milestone.dependsOn],
             acceptanceCriteria: [...milestone.acceptanceCriteria],
           })),
         },
+      }),
+    )
+    .handle("legalcode.memory-integrations", () =>
+      Effect.succeed({
+        data: copyMemory(),
       }),
     )
     .handle("legalcode.source-integrations", () =>
@@ -1182,6 +1263,23 @@ function copyComputerUse(): LegalCode.ComputerUsePolicy {
     credentialRules: [...computerUse.credentialRules],
     auditEvents: [...computerUse.auditEvents],
     sourceImportRules: [...computerUse.sourceImportRules],
+  }
+}
+
+function copyMemory(): LegalCode.MemoryPolicy {
+  return {
+    ...memory,
+    providers: memory.providers.map((provider) => ({
+      ...provider,
+      accessModes: [...provider.accessModes],
+      optionalBackends: [...provider.optionalBackends],
+      allowedUses: [...provider.allowedUses],
+      prohibitedUses: [...provider.prohibitedUses],
+      requiredUserControls: [...provider.requiredUserControls],
+      auditEvents: [...provider.auditEvents],
+      notes: [...provider.notes],
+    })),
+    acceptanceCriteria: [...memory.acceptanceCriteria],
   }
 }
 

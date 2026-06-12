@@ -32,6 +32,7 @@ Use Codex-level quality as the behavioral benchmark:
 - Do not read outside the selected matter, artifact, document selection, or folder granted for the current request.
 - Prefer source authority in this order: matter records, official primary sources, open primary sources, licensed sources through the user's own account, then unofficial secondary sources as research leads only.
 - Use computer control only as a supervised, audited browser session. Do not submit filings, incur fees, upload documents, bypass access controls, or capture restricted content without explicit human approval.
+- Treat optional memory as continuity support, not legal authority. Do not store secrets in memory, do not inject retrieved memories without provenance, and do not use memory across matter/client boundaries without explicit user action.
 
 ## Safety Boundaries
 

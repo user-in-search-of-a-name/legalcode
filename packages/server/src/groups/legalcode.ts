@@ -15,6 +15,7 @@ export const LegalCodeCapabilities = Schema.Struct({
   dataSourceProfiles: Schema.Array(LegalCode.LegalDataSourceProfile),
   sourceRegistry: LegalCode.SourceRegistryPolicy,
   computerUse: LegalCode.ComputerUsePolicy,
+  memory: LegalCode.MemoryPolicy,
   reliabilityGates: Schema.Array(Schema.String),
 }).annotate({ identifier: "LegalCodeCapabilities" })
 
@@ -71,6 +72,18 @@ export const LegalCodeGroup = HttpApiGroup.make("server.legalcode")
         summary: "List LegalCode source integrations",
         description:
           "Describe BYOK legal data sources, source registry requirements, and supervised computer-use rules for official, open, licensed, and matter sources.",
+      }),
+    ),
+  )
+  .add(
+    HttpApiEndpoint.get("legalcode.memory-integrations", "/api/legalcode/memory-integrations", {
+      success: Schema.Struct({ data: LegalCode.MemoryPolicy }),
+    }).annotateMerge(
+      OpenApi.annotations({
+        identifier: "v2.legalcode.memory-integrations",
+        summary: "List LegalCode memory integrations",
+        description:
+          "Describe optional local memory providers, including MemPalace, and the privacy boundaries for matter and agent continuity.",
       }),
     ),
   )
