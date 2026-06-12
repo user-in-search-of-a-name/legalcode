@@ -93,9 +93,13 @@ export default function LegalCodeMatterOSPage() {
   const jurisdictions = () => snapshot()?.jurisdictions ?? []
   const memoryProviders = () => snapshot()?.memory.providers ?? []
   const selectedPlan = createMemo(() => ({
-    role: label(selectedRole()),
-    workflow: label(selectedWorkflow()),
-    output: selectedWorkflow().includes("draft") ? "Draft" : selectedWorkflow().includes("log") ? "Legal sheet" : "Review packet",
+    role: label(String(selectedRole())),
+    workflow: label(String(selectedWorkflow())),
+    output: String(selectedWorkflow()).includes("draft")
+      ? "Draft"
+      : String(selectedWorkflow()).includes("log")
+        ? "Legal sheet"
+        : "Review packet",
   }))
 
   createEffect(() => {
@@ -165,7 +169,7 @@ export default function LegalCodeMatterOSPage() {
               <For each={matterRecords()}>
                 {(item) => (
                   <div class="rounded-[6px] border border-v2-border-border-muted bg-v2-background-bg-layer-01 px-3 py-2">
-                    <div class="text-[13px] leading-5 [font-weight:540]">{label(item)}</div>
+                    <div class="text-[13px] leading-5 [font-weight:540]">{label(String(item))}</div>
                     <div class="text-[11px] leading-4 text-v2-text-text-muted">Matter scoped</div>
                   </div>
                 )}
@@ -182,7 +186,7 @@ export default function LegalCodeMatterOSPage() {
                       class={pickerClass(selectedRole() === role)}
                       onClick={() => setSelectedRole(role)}
                     >
-                      {label(role)}
+                      {label(String(role))}
                     </button>
                   )}
                 </For>
@@ -194,7 +198,7 @@ export default function LegalCodeMatterOSPage() {
                       class={pickerClass(selectedWorkflow() === workflow)}
                       onClick={() => setSelectedWorkflow(workflow)}
                     >
-                      {label(workflow)}
+                      {label(String(workflow))}
                     </button>
                   )}
                 </For>
@@ -236,7 +240,7 @@ export default function LegalCodeMatterOSPage() {
               <SurfaceRow title="Legal document editor" detail={`${roadmap()?.documentEngine.foundation ?? "ProseMirror"} + ${roadmap()?.documentEngine.collaboration ?? "Yjs"} with comments, suggestions, source anchors, DOCX/PDF export`} />
               <SurfaceRow title="Legal sheet engine" detail={`${roadmap()?.sheetEngine.foundation ?? "Typed legal tables"} + ${roadmap()?.sheetEngine.collaboration ?? "Yjs"} for issue logs, evidence, discovery, deadlines, damages, and privilege`} />
               <div class="flex flex-wrap gap-1.5 pt-1">
-                <For each={sheets().slice(0, 8)}>{(sheet) => <Chip>{label(sheet)}</Chip>}</For>
+                <For each={sheets().slice(0, 8)}>{(sheet) => <Chip>{label(String(sheet))}</Chip>}</For>
               </div>
             </div>
           </Panel>
@@ -248,7 +252,7 @@ export default function LegalCodeMatterOSPage() {
             >
               <div class="grid gap-2">
                 <For each={sourceProfiles().slice(0, 5)}>
-                  {(profile) => <SurfaceRow title={profile.label} detail={`${label(profile.tier)} - ${label(profile.credentialMode)} - ${profile.freshness}`} />}
+                  {(profile) => <SurfaceRow title={profile.label} detail={`${label(String(profile.tier))} - ${label(String(profile.credentialMode))} - ${profile.freshness}`} />}
                 </For>
               </div>
             </Show>
@@ -257,7 +261,7 @@ export default function LegalCodeMatterOSPage() {
           <Panel title="Governance" eyebrow="Confidential by default">
             <div class="grid gap-2">
               <SurfaceRow title="Collaboration" detail={roadmap()?.collaboration.publicLinksAllowed === false ? "Invite-only matters. No public legal artifact links." : "Invite-based collaboration planned."} />
-              <SurfaceRow title="Computer use" detail={snapshot()?.sources.computerUse.mode ? `${label(snapshot()!.sources.computerUse.mode)} with approval and audit events` : "Supervised BYOK browser work only."} />
+              <SurfaceRow title="Computer use" detail={snapshot()?.sources.computerUse.mode ? `${label(String(snapshot()!.sources.computerUse.mode))} with approval and audit events` : "Supervised BYOK browser work only."} />
               <SurfaceRow title="Local memory" detail={memoryProviders().length ? memoryProviders().map((provider) => provider.label).join(", ") : "Optional local memory; never a legal authority source."} />
               <SurfaceRow title="Jurisdictions" detail={jurisdictions().length ? jurisdictions().map((pack) => `${pack.name} (${pack.status})`).join(", ") : "US litigation first, India next."} />
               <SurfaceRow title="Workspace" detail={workspaceProfiles().length ? workspaceProfiles().map((profile) => profile.label).join(", ") : "Google Workspace and Microsoft 365 connectors."} />
@@ -314,13 +318,13 @@ function EmptyState(props: { text: string }) {
 }
 
 function StatusPill(props: { tone: LoadState["status"]; children: JSX.Element }) {
+  const muted = "border-v2-border-border-muted bg-v2-background-bg-layer-01 text-v2-text-text-muted"
   return (
     <span
       class="rounded-[4px] border px-2 py-1 text-[11px] leading-3 [font-weight:560]"
       classList={{
-        "border-v2-border-border-muted bg-v2-background-bg-layer-01 text-v2-text-text-muted": props.tone === "loading",
+        [muted]: props.tone === "loading" || props.tone === "fallback",
         "border-v2-border-border-base bg-v2-background-bg-layer-01 text-v2-text-text-base": props.tone === "ready",
-        "border-v2-border-border-muted bg-v2-background-bg-layer-01 text-v2-text-text-muted": props.tone === "fallback",
       }}
     >
       {props.children}
