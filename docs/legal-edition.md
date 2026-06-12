@@ -1,8 +1,10 @@
 # LegalCode Edition
 
-LegalCode is a legal-use customization layer for OpenCode. It keeps the upstream agent runtime intact and adds legal workflows, specialist agents, confidentiality defaults, and a quality benchmark modeled on Codex-level execution.
+LegalCode is a local-first legal AI workspace for source-linked, human-approved litigation work. It keeps the upstream OpenCode runtime intact while adding matter workspaces, supervised legal coworkers, legal documents, structured legal sheets, BYOK source integrations, optional local memory, confidentiality defaults, and a quality benchmark modeled on Codex-level execution.
 
 This fork is not built by, endorsed by, or affiliated with the OpenCode team.
+
+Default tagline: **Draft faster. Verify before filing.**
 
 ## Product Goal
 

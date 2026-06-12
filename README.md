@@ -1,124 +1,137 @@
-> LegalCode Edition: this workspace is a legal-use customization of OpenCode that is moving toward a standalone desktop app with matter workspaces, collaborative legal documents, and collaborative legal sheets. It is not built by, endorsed by, or affiliated with the OpenCode team. Start with [docs/legal-edition.md](docs/legal-edition.md) and [docs/desktop-collaboration.md](docs/desktop-collaboration.md).
+# LegalCode
 
-<p align="center">
-  <a href="https://opencode.ai">
-    <picture>
-      <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="OpenCode logo">
-    </picture>
-  </a>
-</p>
-<p align="center">The open source AI coding agent.</p>
-<p align="center">
-  <a href="https://opencode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/opencode-ai"><img alt="npm" src="https://img.shields.io/npm/v/opencode-ai?style=flat-square" /></a>
-  <a href="https://github.com/anomalyco/opencode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/anomalyco/opencode/publish.yml?style=flat-square&branch=dev" /></a>
-</p>
+**Local-first AI workspace for litigation work.**
 
-<p align="center">
-  <a href="README.md">English</a> |
-  <a href="README.zh.md">简体中文</a> |
-  <a href="README.zht.md">繁體中文</a> |
-  <a href="README.ko.md">한국어</a> |
-  <a href="README.de.md">Deutsch</a> |
-  <a href="README.es.md">Español</a> |
-  <a href="README.fr.md">Français</a> |
-  <a href="README.it.md">Italiano</a> |
-  <a href="README.da.md">Dansk</a> |
-  <a href="README.ja.md">日本語</a> |
-  <a href="README.pl.md">Polski</a> |
-  <a href="README.ru.md">Русский</a> |
-  <a href="README.bs.md">Bosanski</a> |
-  <a href="README.ar.md">العربية</a> |
-  <a href="README.no.md">Norsk</a> |
-  <a href="README.br.md">Português (Brasil)</a> |
-  <a href="README.th.md">ไทย</a> |
-  <a href="README.tr.md">Türkçe</a> |
-  <a href="README.uk.md">Українська</a> |
-  <a href="README.bn.md">বাংলা</a> |
-  <a href="README.gr.md">Ελληνικά</a> |
-  <a href="README.vi.md">Tiếng Việt</a>
-</p>
+LegalCode is an open-source, legal-use desktop workspace built on the OpenCode runtime. It is designed for solo litigators and small legal teams who need AI assistance that stays matter-scoped, source-linked, human-approved, and private by default.
 
-[![OpenCode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
+LegalCode is not a generic chatbot and not an unsupervised filing robot. It is a supervised legal coworker for drafting, research planning, discovery, evidence organization, deadline review, workspace file handling, and source verification. AI outputs are treated as drafts, suggestions, comments, extractions, or final candidates until a human approves them.
+
+This fork is not built by, endorsed by, or affiliated with the OpenCode team.
+
+## Product Promise
+
+LegalCode helps legal professionals move faster without losing control:
+
+- **Matter-first:** client, parties, claims, documents, evidence, deadlines, tasks, notes, and audit events live inside a matter command center.
+- **Trust-first:** citations, quotes, dates, exhibit references, and factual claims need source spans, confidence, unresolved questions, and verification status.
+- **Local-first:** matter data starts on the user's machine; cloud sync and collaboration are explicit choices.
+- **Human-approved:** no final/export/filing-ready output proceeds without a human approval marker.
+- **BYOK/BYOA:** open-source data integrations use bring-your-own-key or bring-your-own-account mode. No bundled paid legal data or shared vendor credentials.
+- **Collaboration-ready:** LegalCode is moving toward Google Docs-style legal documents and Google Sheets-style legal work tables with comments, suggestions, permissions, versions, and audit logs.
+
+## Positioning
+
+**For US solo litigators first. India litigation next. Other jurisdictions later.**
+
+The first product wedge is litigation support:
+
+- complaint and answer drafting,
+- motion outlines,
+- discovery requests and responses,
+- deposition prep,
+- evidence chronologies,
+- issue memos,
+- exhibit lists,
+- privilege logs,
+- demand letters,
+- settlement briefs,
+- hearing prep,
+- filing readiness checks.
+
+## Current Foundation
+
+This repository already includes LegalCode-specific product scaffolding:
+
+- legal operating instructions and specialist agents in `.opencode/`,
+- matter/workspace/source/citation/deadline/task/audit/agent-action domain contracts,
+- Google Workspace and Microsoft 365 workspace integration contracts,
+- BYOK legal source integration policy,
+- optional MemPalace-style local memory policy,
+- US and India litigation jurisdiction pack seeds,
+- legal quality evals and golden matter fixtures.
+
+Start here:
+
+- [LegalCode Edition](docs/legal-edition.md)
+- [Product Reliability Roadmap](docs/product-reliability-roadmap.md)
+- [Desktop Collaboration](docs/desktop-collaboration.md)
+- [Workspace Integrations](docs/workspace-integrations.md)
+- [Source Integrations](docs/source-integrations.md)
+- [Memory Integrations](docs/memory-integrations.md)
+- [Brand Guide](docs/brand.md)
 
 ---
 
-### Installation
+### Development Status
+
+LegalCode is in product-foundation stage. The repo contains the domain contracts, API metadata, operating instructions, jurisdiction seeds, evaluation cases, and early workspace integration flows needed to build toward a standalone desktop product.
+
+The next user-ready milestones are:
+
+1. matter CRUD and matter command center,
+2. encrypted local matter storage,
+3. document ingestion with source anchors,
+4. trust dashboard for citations, quotes, deadlines, and filing readiness,
+5. legal document and legal sheet editors,
+6. invite-based collaboration and audit-backed sync.
+
+### Local Development
+
+This repo uses Bun workspaces.
 
 ```bash
-# YOLO
-curl -fsSL https://opencode.ai/install | bash
-
-# Package managers
-npm i -g opencode-ai@latest        # or bun/pnpm/yarn
-scoop install opencode             # Windows
-choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS and Linux (recommended, always up to date)
-brew install opencode              # macOS and Linux (official brew formula, updated less)
-sudo pacman -S opencode            # Arch Linux (Stable)
-paru -S opencode-bin               # Arch Linux (Latest from AUR)
-mise use -g opencode               # Any OS
-nix run nixpkgs#opencode           # or github:anomalyco/opencode for latest dev branch
+bun install
+bun typecheck
+bun --cwd packages/app dev
+bun --cwd packages/desktop dev
 ```
 
-> [!TIP]
-> Remove versions older than 0.1.x before installing.
+Tests should be run from package directories, not from the repo root.
 
 ### LegalCode Desktop App
 
-LegalCode is being packaged as a standalone desktop application on top of the OpenCode runtime.
+LegalCode Desktop is the intended primary surface. The app should open into the matter command center, not a generic chat or terminal view.
 
-| Platform              | Download                           |
+Planned package names:
+
+| Platform              | Artifact                           |
 | --------------------- | ---------------------------------- |
 | macOS (Apple Silicon) | `legalcode-desktop-mac-arm64.dmg`  |
 | macOS (Intel)         | `legalcode-desktop-mac-x64.dmg`    |
 | Windows               | `legalcode-desktop-windows-x64.exe` |
 | Linux                 | `.deb`, `.rpm`, or `.AppImage`     |
 
-#### Installation Directory
+### Legal Coworkers
 
-The install script respects the following priority order for the installation path:
+LegalCode uses role-specific coworkers for legal tasks:
 
-1. `$OPENCODE_INSTALL_DIR` - Custom installation directory
-2. `$XDG_BIN_DIR` - XDG Base Directory Specification compliant path
-3. `$HOME/bin` - Standard user binary directory (if it exists or can be created)
-4. `$HOME/.opencode/bin` - Default fallback
+- Case Strategist,
+- Research Clerk,
+- Drafting Clerk,
+- Discovery Analyst,
+- Citation Checker,
+- Deadline Clerk,
+- Evidence Chronologist,
+- Settlement Analyst,
+- Filing Assistant,
+- Workspace Integrator.
 
-```bash
-# Examples
-OPENCODE_INSTALL_DIR=/usr/local/bin curl -fsSL https://opencode.ai/install | bash
-XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://opencode.ai/install | bash
-```
+Each coworker must stay matter-scoped, declare what it reads, produce source-linked output where facts or law are involved, and keep final legal work human-approved.
 
-### Agents
+### Upstream Runtime
 
-OpenCode includes two built-in agents you can switch between with the `Tab` key.
+LegalCode is built on the OpenCode runtime and keeps the upstream architecture where possible. Upstream OpenCode documentation and contribution practices remain useful for runtime-level development, but LegalCode's product direction, branding, legal guardrails, and collaboration model are defined in this repository.
 
-- **build** - Default, full-access agent for development work
-- **plan** - Read-only agent for analysis and code exploration
-  - Denies file edits by default
-  - Asks permission before running bash commands
-  - Ideal for exploring unfamiliar codebases or planning changes
-
-Also included is a **general** subagent for complex searches and multistep tasks.
-This is used internally and can be invoked using `@general` in messages.
-
-Learn more about [agents](https://opencode.ai/docs/agents).
-
-### Documentation
-
-For more info on how to configure OpenCode, [**head over to our docs**](https://opencode.ai/docs).
+OpenCode upstream: <https://github.com/anomalyco/opencode>
 
 ### Contributing
 
-If you're interested in contributing to OpenCode, please read our [contributing docs](./CONTRIBUTING.md) before submitting a pull request.
+Contributions should preserve LegalCode's product posture:
 
-### Building on OpenCode
-
-If you are working on a project that's related to OpenCode and is using "opencode" as part of its name, for example "opencode-dashboard" or "opencode-mobile", please add a note to your README to clarify that it is not built by the OpenCode team and is not affiliated with us in any way.
-
----
-
-**Join our community** [Discord](https://discord.gg/opencode) | [X.com](https://x.com/opencode)
+- local-first,
+- matter-scoped,
+- source-linked,
+- human-approved,
+- BYOK/BYOA for external data,
+- no public sharing by default,
+- no claims of replacing qualified legal counsel.
