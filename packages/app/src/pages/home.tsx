@@ -76,6 +76,7 @@ const HOME_SEARCH_RESULT_TITLE =
   "min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] leading-4 tracking-[-0.04px] text-v2-text-text-base [font-weight:530]"
 const HOME_SEARCH_RESULT_META =
   "min-w-0 flex-[1_1_auto] overflow-hidden text-ellipsis whitespace-nowrap text-[13px] leading-4 tracking-[-0.04px] text-v2-text-text-muted [font-weight:440]"
+const LEGALCODE_DOWNLOAD_URL = "https://github.com/user-in-search-of-a-name/legalcode/releases/latest"
 
 let pendingHomeNavigation: { server: ServerConnection.Key; href: string } | undefined
 
@@ -270,6 +271,16 @@ function HomeDesign() {
     openProjectNewSession(conn, project.worktree)
   }
 
+  function openMatterFolder() {
+    const conn = focusedServer()
+    if (!conn) return
+    void chooseProject(conn)
+  }
+
+  function openLegalWorkspace() {
+    navigate("/legalcode/workspace")
+  }
+
   function navigateOnServer(conn: ServerConnection.Any, href: string) {
     const next = homeProjectNavigation(server.key, ServerConnection.key(conn), href)
     if (!next.server) {
@@ -360,7 +371,7 @@ function HomeDesign() {
           clearNotifications={clearNotifications}
           unseenCount={unseenCount}
           openSettings={openSettings}
-          openHelp={() => platform.openLink("https://opencode.ai/desktop-feedback")}
+          openHelp={() => platform.openLink("https://github.com/user-in-search-of-a-name/legalcode/issues")}
           language={language}
         />
 
@@ -368,6 +379,14 @@ function HomeDesign() {
           class="min-h-0 min-w-0 flex-1 flex flex-col pt-12"
           aria-label={language.t("sidebar.project.recentSessions")}
         >
+          <LegalCodeMatterStart
+            hasProject={!!newSessionProject()}
+            onOpenMatterFolder={openMatterFolder}
+            onNewSession={openNewSession}
+            onOpenWorkspace={openLegalWorkspace}
+            onDownload={() => platform.openLink(LEGALCODE_DOWNLOAD_URL)}
+            language={language}
+          />
           <HomeSessionSearch
             value={state.search}
             placeholder={language.t("home.sessions.search.placeholder")}
@@ -431,6 +450,64 @@ function HomeDesign() {
         </section>
       </div>
     </div>
+  )
+}
+
+function LegalCodeMatterStart(props: {
+  hasProject: boolean
+  onOpenMatterFolder: () => void
+  onNewSession: () => void
+  onOpenWorkspace: () => void
+  onDownload: () => void
+  language: ReturnType<typeof useLanguage>
+}) {
+  return (
+    <div class="mb-4 ml-4 mr-2 rounded-[8px] border border-v2-border-border-base bg-v2-background-bg-layer-01 px-4 py-3">
+      <div class="flex min-w-0 flex-col gap-3">
+        <div class="flex min-w-0 flex-wrap items-start justify-between gap-3">
+          <div class="min-w-0 flex-1">
+            <div class="text-[11px] leading-4 uppercase text-v2-text-text-muted [font-weight:560]">
+              {props.language.t("legalcode.home.kicker")}
+            </div>
+            <h1 class="mt-0.5 text-[19px] leading-6 text-v2-text-text-base [font-weight:590]">
+              {props.language.t("legalcode.home.title")}
+            </h1>
+            <p class="mt-1 max-w-[520px] text-[13px] leading-5 text-v2-text-text-muted">
+              {props.language.t("legalcode.home.subtitle")}
+            </p>
+          </div>
+          <div class="flex shrink-0 flex-wrap gap-1.5">
+            <LegalCodeTrustPill label={props.language.t("legalcode.home.trust.private")} />
+            <LegalCodeTrustPill label={props.language.t("legalcode.home.trust.byok")} />
+            <LegalCodeTrustPill label={props.language.t("legalcode.home.trust.verified")} />
+          </div>
+        </div>
+        <div class="flex min-w-0 flex-wrap gap-2">
+          <ButtonV2 size="small" variant="contrast" icon="folder-add-left" onClick={props.onOpenMatterFolder}>
+            {props.language.t("legalcode.home.action.openMatter")}
+          </ButtonV2>
+          <Show when={props.hasProject}>
+            <ButtonV2 size="small" variant="neutral" icon="edit" onClick={props.onNewSession}>
+              {props.language.t("legalcode.home.action.newSession")}
+            </ButtonV2>
+          </Show>
+          <ButtonV2 size="small" variant="ghost-muted" onClick={props.onOpenWorkspace}>
+            {props.language.t("legalcode.home.action.workspace")}
+          </ButtonV2>
+          <ButtonV2 size="small" variant="ghost-muted" onClick={props.onDownload}>
+            {props.language.t("legalcode.home.action.download")}
+          </ButtonV2>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function LegalCodeTrustPill(props: { label: string }) {
+  return (
+    <span class="rounded-[4px] border border-v2-border-border-muted bg-v2-background-bg-base px-2 py-1 text-[11px] leading-3 text-v2-text-text-muted [font-weight:520]">
+      {props.label}
+    </span>
   )
 }
 

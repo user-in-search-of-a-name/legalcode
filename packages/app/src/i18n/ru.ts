@@ -454,8 +454,8 @@ export const dict = {
   "error.page.action.checking": "Проверка...",
   "error.page.action.checkUpdates": "Проверить обновления",
   "error.page.action.updateTo": "Обновить до {{version}}",
-  "error.page.report.prefix": "Пожалуйста, сообщите об этой ошибке команде OpenCode",
-  "error.page.report.discord": "в Discord",
+  "error.page.report.prefix": "Пожалуйста, сообщите об этой ошибке команде LegalCode",
+  "error.page.report.discord": "on GitHub",
   "error.page.version": "Версия: {{version}}",
 
   "error.dev.rootNotFound":
@@ -615,7 +615,7 @@ export const dict = {
   "sidebar.project.viewAllSessions": "Посмотреть все сессии",
   "sidebar.project.clearNotifications": "Очистить уведомления",
 
-  "app.name.desktop": "OpenCode Desktop",
+  "app.name.desktop": "LegalCode Desktop",
   "settings.section.desktop": "Приложение",
   "settings.section.server": "Сервер",
   "settings.tab.general": "Основные",

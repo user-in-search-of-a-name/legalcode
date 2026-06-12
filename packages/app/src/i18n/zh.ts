@@ -458,8 +458,8 @@ export const dict = {
   "error.page.action.checking": "检查中...",
   "error.page.action.checkUpdates": "检查更新",
   "error.page.action.updateTo": "更新到 {{version}}",
-  "error.page.report.prefix": "请将此错误报告给 OpenCode 团队",
-  "error.page.report.discord": "在 Discord 上",
+  "error.page.report.prefix": "请将此错误报告给 LegalCode 团队",
+  "error.page.report.discord": "on GitHub",
   "error.page.version": "版本：{{version}}",
   "error.dev.rootNotFound": "未找到根元素。你是不是忘了把它添加到 index.html？或者 id 属性拼写错了？",
   "error.serverSync.connectFailed": "无法连接到服务器。是否有服务器正在 `{{url}}` 运行？",
@@ -617,7 +617,7 @@ export const dict = {
   "sidebar.project.viewAllSessions": "查看全部会话",
   "sidebar.project.clearNotifications": "清除通知",
 
-  "app.name.desktop": "OpenCode Desktop",
+  "app.name.desktop": "LegalCode Desktop",
 
   "settings.section.desktop": "桌面",
   "settings.section.server": "服务器",

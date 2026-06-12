@@ -476,8 +476,8 @@ export const dict = {
   "error.page.action.checkUpdates": "Перевірити оновлення",
   "error.page.action.updateTo": "Оновити до {{version}}",
   "error.page.circular": "[Циклічне]",
-  "error.page.report.prefix": "Будь ласка, повідомте про цю помилку команді OpenCode",
-  "error.page.report.discord": "на Discord",
+  "error.page.report.prefix": "Будь ласка, повідомте про цю помилку команді LegalCode",
+  "error.page.report.discord": "on GitHub",
   "error.page.version": "Версія: {{version}}",
 
   "error.dev.rootNotFound":
@@ -717,7 +717,7 @@ export const dict = {
   "debugBar.mem.tipUnavailable": "Використана купа JS проти ліміту купи. Тільки Chromium.",
   "debugBar.mem.tip": "Використана купа JS проти ліміту купи. {{used}} з {{limit}}.",
 
-  "app.name.desktop": "OpenCode Desktop",
+  "app.name.desktop": "LegalCode Desktop",
 
   "settings.section.desktop": "Робочий стіл",
   "settings.section.server": "Сервер",

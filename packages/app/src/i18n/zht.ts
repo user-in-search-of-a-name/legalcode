@@ -451,8 +451,8 @@ export const dict = {
   "error.page.action.checking": "檢查中...",
   "error.page.action.checkUpdates": "檢查更新",
   "error.page.action.updateTo": "更新到 {{version}}",
-  "error.page.report.prefix": "請將此錯誤回報給 OpenCode 團隊",
-  "error.page.report.discord": "在 Discord 上",
+  "error.page.report.prefix": "請將此錯誤回報給 LegalCode 團隊",
+  "error.page.report.discord": "on GitHub",
   "error.page.version": "版本: {{version}}",
 
   "error.dev.rootNotFound": "找不到根元素。你是不是忘了把它新增到 index.html? 或者 id 屬性拼錯了?",
@@ -604,7 +604,7 @@ export const dict = {
   "sidebar.project.viewAllSessions": "查看全部工作階段",
   "sidebar.project.clearNotifications": "清除通知",
 
-  "app.name.desktop": "OpenCode Desktop",
+  "app.name.desktop": "LegalCode Desktop",
   "settings.section.desktop": "桌面",
   "settings.section.server": "伺服器",
   "settings.tab.general": "一般",

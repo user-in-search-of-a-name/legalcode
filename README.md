@@ -8,6 +8,8 @@ LegalCode is not a generic chatbot and not an unsupervised filing robot. It is a
 
 This fork is not built by, endorsed by, or affiliated with the OpenCode team.
 
+[Download LegalCode Desktop](https://github.com/user-in-search-of-a-name/legalcode/releases/latest)
+
 ## Product Promise
 
 LegalCode helps legal professionals move faster without losing control:
@@ -58,6 +60,7 @@ Start here:
 - [Workspace Integrations](docs/workspace-integrations.md)
 - [Source Integrations](docs/source-integrations.md)
 - [Memory Integrations](docs/memory-integrations.md)
+- [Download LegalCode Desktop](docs/download.md)
 - [Brand Guide](docs/brand.md)
 
 ---
@@ -92,13 +95,19 @@ Tests should be run from package directories, not from the repo root.
 
 LegalCode Desktop is the intended primary surface. The app should open into the matter command center, not a generic chat or terminal view.
 
+Public download URL:
+
+[Download LegalCode Desktop](https://github.com/user-in-search-of-a-name/legalcode/releases/latest)
+
+Maintainers can publish free installers by running the `legalcode desktop release` GitHub Actions workflow with a version tag.
+
 Planned package names:
 
 | Platform              | Artifact                           |
 | --------------------- | ---------------------------------- |
 | macOS (Apple Silicon) | `legalcode-desktop-mac-arm64.dmg`  |
 | macOS (Intel)         | `legalcode-desktop-mac-x64.dmg`    |
-| Windows               | `legalcode-desktop-windows-x64.exe` |
+| Windows               | `legalcode-desktop-win-x64.exe`     |
 | Linux                 | `.deb`, `.rpm`, or `.AppImage`     |
 
 ### Legal Coworkers

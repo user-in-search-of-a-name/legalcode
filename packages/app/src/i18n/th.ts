@@ -453,8 +453,8 @@ export const dict = {
   "error.page.action.checking": "กำลังตรวจสอบ...",
   "error.page.action.checkUpdates": "ตรวจสอบการอัปเดต",
   "error.page.action.updateTo": "อัปเดตเป็น {{version}}",
-  "error.page.report.prefix": "โปรดรายงานข้อผิดพลาดนี้ให้ทีม OpenCode",
-  "error.page.report.discord": "บน Discord",
+  "error.page.report.prefix": "โปรดรายงานข้อผิดพลาดนี้ให้ทีม LegalCode",
+  "error.page.report.discord": "on GitHub",
   "error.page.version": "เวอร์ชัน: {{version}}",
 
   "error.dev.rootNotFound": "ไม่พบองค์ประกอบรูท คุณลืมเพิ่มใน index.html หรือบางทีแอตทริบิวต์ id อาจสะกดผิด?",
@@ -608,7 +608,7 @@ export const dict = {
   "sidebar.project.viewAllSessions": "ดูเซสชันทั้งหมด",
   "sidebar.project.clearNotifications": "ล้างการแจ้งเตือน",
 
-  "app.name.desktop": "OpenCode Desktop",
+  "app.name.desktop": "LegalCode Desktop",
 
   "settings.section.desktop": "เดสก์ท็อป",
   "settings.section.server": "เซิร์ฟเวอร์",
