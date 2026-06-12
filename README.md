@@ -56,6 +56,7 @@ Start here:
 
 - [LegalCode Edition](docs/legal-edition.md)
 - [Product Reliability Roadmap](docs/product-reliability-roadmap.md)
+- [LegalCode Matter OS](docs/matter-os.md)
 - [Desktop Collaboration](docs/desktop-collaboration.md)
 - [Workspace Integrations](docs/workspace-integrations.md)
 - [Source Integrations](docs/source-integrations.md)

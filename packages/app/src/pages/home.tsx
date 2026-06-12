@@ -281,6 +281,10 @@ function HomeDesign() {
     navigate("/legalcode/workspace")
   }
 
+  function openMatterOS() {
+    navigate("/legalcode/matter-os")
+  }
+
   function navigateOnServer(conn: ServerConnection.Any, href: string) {
     const next = homeProjectNavigation(server.key, ServerConnection.key(conn), href)
     if (!next.server) {
@@ -383,6 +387,7 @@ function HomeDesign() {
             hasProject={!!newSessionProject()}
             onOpenMatterFolder={openMatterFolder}
             onNewSession={openNewSession}
+            onOpenMatterOS={openMatterOS}
             onOpenWorkspace={openLegalWorkspace}
             onDownload={() => platform.openLink(LEGALCODE_DOWNLOAD_URL)}
             language={language}
@@ -457,6 +462,7 @@ function LegalCodeMatterStart(props: {
   hasProject: boolean
   onOpenMatterFolder: () => void
   onNewSession: () => void
+  onOpenMatterOS: () => void
   onOpenWorkspace: () => void
   onDownload: () => void
   language: ReturnType<typeof useLanguage>
@@ -493,6 +499,9 @@ function LegalCodeMatterStart(props: {
           </Show>
           <ButtonV2 size="small" variant="ghost-muted" onClick={props.onOpenWorkspace}>
             {props.language.t("legalcode.home.action.workspace")}
+          </ButtonV2>
+          <ButtonV2 size="small" variant="ghost-muted" onClick={props.onOpenMatterOS}>
+            {props.language.t("legalcode.home.action.matterOS")}
           </ButtonV2>
           <ButtonV2 size="small" variant="ghost-muted" onClick={props.onDownload}>
             {props.language.t("legalcode.home.action.download")}

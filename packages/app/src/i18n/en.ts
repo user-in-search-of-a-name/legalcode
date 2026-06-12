@@ -601,6 +601,7 @@ export const dict = {
   "legalcode.home.action.openMatter": "Open matter folder",
   "legalcode.home.action.newSession": "Start legal session",
   "legalcode.home.action.workspace": "Workspace files",
+  "legalcode.home.action.matterOS": "Matter OS",
   "legalcode.home.action.download": "Download Desktop",
 
   "session.tab.session": "Session",
